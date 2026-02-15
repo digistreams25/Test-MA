@@ -92,13 +92,14 @@ namespace TwinThread.Civil3D.LOI.Commands
                         if (!string.IsNullOrEmpty(ctx.ErrorMessage))
                         {
                             errors++;
-                            ed.WriteMessage("\nError [{0}]: {1}", ctx.Handle?.ToString() ?? "unknown", ctx.ErrorMessage);
+                            ed.WriteMessage("\nError [{0}]: {1}", ctx.Handle.ToString(), ctx.ErrorMessage);
                             continue;
                         }
 
                         try
                         {
-                            Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite) as Entity;
+                            DBObject dbObj = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite);
+                            Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
                             if (entity == null)
                             {
                                 errors++;
@@ -152,7 +153,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                         catch (System.Exception ex)
                         {
                             errors++;
-                            ed.WriteMessage("\nError processing object {0}: {1}", ctx.Handle?.ToString() ?? "unknown", ex.Message);
+                            ed.WriteMessage("\nError processing object {0}: {1}", ctx.Handle.ToString(), ex.Message);
                         }
                     }
 
@@ -215,7 +216,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                 pko.Keywords.Add("Yes");
                 pko.Keywords.Add("No");
                 pko.Keywords.Default = "No";
-                PromptResult pr = ed.GetKeyword(pko);
+                PromptResult pr = ed.GetKeywords(pko);
 
                 if (pr.Status != PromptStatus.OK || pr.StringResult != "Yes")
                 {
@@ -241,7 +242,8 @@ namespace TwinThread.Civil3D.LOI.Commands
 
                         try
                         {
-                            Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite) as Entity;
+                            DBObject dbObj = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite);
+                            Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
                             if (entity != null)
                             {
                                 xdataStore.RemoveXData(entity);

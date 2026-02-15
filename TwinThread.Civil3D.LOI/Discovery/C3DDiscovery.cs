@@ -45,7 +45,8 @@ namespace TwinThread.Civil3D.LOI.Discovery
                 if (civilDoc.CorridorCollection == null)
                     return contexts;
 
-                using (Transaction tr = civilDoc.Database.TransactionManager.StartTransaction())
+                Database db = Application.DocumentManager.MdiActiveDocument.Database;
+                using (Transaction tr = db.TransactionManager.StartTransaction())
                 {
                     foreach (ObjectId corridorId in civilDoc.CorridorCollection)
                     {
@@ -108,7 +109,8 @@ namespace TwinThread.Civil3D.LOI.Discovery
 
             try
             {
-                using (Transaction tr = civilDoc.Database.TransactionManager.StartTransaction())
+                Database db = Application.DocumentManager.MdiActiveDocument.Database;
+                using (Transaction tr = db.TransactionManager.StartTransaction())
                 {
                     ObjectIdCollection networkIds = civilDoc.GetPipeNetworkIds();
                     if (networkIds == null)
