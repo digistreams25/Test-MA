@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  body {
+    @apply bg-surface-0 text-gray-200 font-mono antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-1;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-4 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-gold;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface-1 border border-surface-3 rounded-lg;
+  }
+  .card-hover {
+    @apply card hover:border-brand-gold/40 transition-colors cursor-pointer;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+  .badge-critical {
+    @apply badge bg-clash-critical/20 text-clash-critical border border-clash-critical/30;
+  }
+  .badge-warning {
+    @apply badge bg-clash-warning/20 text-clash-warning border border-clash-warning/30;
+  }
+  .badge-resolved {
+    @apply badge bg-clash-resolved/20 text-clash-resolved border border-clash-resolved/30;
+  }
+  .badge-info {
+    @apply badge bg-clash-info/20 text-clash-info border border-clash-info/30;
+  }
+  .btn-primary {
+    @apply px-4 py-2 bg-brand-gold text-surface-0 font-semibold rounded-md hover:bg-brand-gold-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply px-4 py-2 bg-surface-3 text-gray-200 font-medium rounded-md hover:bg-surface-4 transition-colors border border-surface-4;
+  }
+  .btn-danger {
+    @apply px-4 py-2 bg-clash-critical/20 text-clash-critical font-medium rounded-md hover:bg-clash-critical/30 transition-colors border border-clash-critical/30;
+  }
+  .input {
+    @apply bg-surface-2 border border-surface-4 rounded-md px-3 py-2 text-gray-200 placeholder-gray-500 focus:outline-none focus:border-brand-gold/60 focus:ring-1 focus:ring-brand-gold/30 transition-colors;
+  }
+}
