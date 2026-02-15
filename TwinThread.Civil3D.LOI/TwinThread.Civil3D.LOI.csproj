@@ -36,20 +36,31 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Text.Json" />
     <Reference Include="Microsoft.CSharp" />
-    <!-- AutoCAD References - Update paths based on your Civil 3D installation -->
-    <!-- Example paths for Civil 3D 2024 -->
+    <!-- AutoCAD/Civil 3D References -->
+    <!-- IMPORTANT: Update paths below to match YOUR Civil 3D installation -->
+    <!-- Change "2024" to your version: 2023, 2024, 2025, or 2026 -->
+
+    <!-- CRITICAL: accoremgd.dll contains CommandClass, CommandMethod, Document -->
+    <Reference Include="accoremgd">
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\accoremgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <Reference Include="acdbmgd">
       <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\acdbmgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+
     <Reference Include="acmgd">
       <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\acmgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+
     <Reference Include="AeccDbMgd">
       <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\C3D\AeccDbMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
+
     <Reference Include="AeccPressurePipesMgd">
       <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\C3D\AeccPressurePipesMgd.dll</HintPath>
       <Private>False</Private>
