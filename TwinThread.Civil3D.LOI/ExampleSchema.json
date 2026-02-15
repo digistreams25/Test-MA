@@ -1,0 +1,406 @@
+{
+  "projectId": "proj-12345",
+  "projectName": "Downtown Infrastructure Upgrade",
+  "milestone": {
+    "id": "ms-design-dev",
+    "name": "Design Development"
+  },
+  "schemaElements": [
+    {
+      "id": "elem-storm-pipes",
+      "name": "Storm Water Pipes",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "STM-PIPE-001"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "ABC Engineering"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "DD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "In Progress"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Reinforced Concrete"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S2"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAny": [
+          {
+            "kind": "networkEquals",
+            "value": "Storm"
+          },
+          {
+            "kind": "layerRegex",
+            "value": "^C-UTIL-STRM"
+          }
+        ],
+        "matchAll": []
+      }
+    },
+    {
+      "id": "elem-sanitary-pipes",
+      "name": "Sanitary Sewer Pipes",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "SAN-PIPE-002"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "ABC Engineering"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "DD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Under Review"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "PVC"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S3"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAny": [
+          {
+            "kind": "networkEquals",
+            "value": "Sanitary"
+          },
+          {
+            "kind": "layerContains",
+            "value": "SANITARY"
+          }
+        ],
+        "matchAll": []
+      }
+    },
+    {
+      "id": "elem-main-corridor",
+      "name": "Main Road Corridor",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "ROAD-COR-100"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "XYZ Civil Consultants"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "DD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Approved"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Asphalt"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S4"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["corridor"],
+        "matchAny": [
+          {
+            "kind": "alignmentRegex",
+            "value": "^Main.*"
+          },
+          {
+            "kind": "nameContains",
+            "value": "Primary"
+          }
+        ],
+        "matchAll": []
+      }
+    },
+    {
+      "id": "elem-utility-structures",
+      "name": "Utility Structures",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "STRUCT-MH-050"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "ABC Engineering"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "DD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Draft"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Precast Concrete"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S2"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["structure"],
+        "matchAny": [
+          {
+            "kind": "layerRegex",
+            "value": "^C-UTIL-.*"
+          }
+        ],
+        "matchAll": []
+      }
+    },
+    {
+      "id": "elem-retaining-walls",
+      "name": "Retaining Walls (3D Solids)",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "WALL-RET-200"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Structural Design LLC"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "CD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Final"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Reinforced Concrete"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S4"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["solid"],
+        "matchAny": [
+          {
+            "kind": "layerEquals",
+            "value": "C-WALL-RETAIN"
+          },
+          {
+            "kind": "layerContains",
+            "value": "RETAINING"
+          }
+        ],
+        "matchAll": []
+      }
+    }
+  ]
+}

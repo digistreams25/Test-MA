@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationPackage
+    SchemaVersion="1.0"
+    AutodeskProduct="Civil 3D"
+    ProductType="Application"
+    Name="TwinThread LOI Plugin"
+    Description="Level of Information enforcement for Civil 3D objects"
+    AppVersion="1.0.0"
+    Author="TwinThread"
+    HelpFile="./Contents/README.md"
+    ProductCode="{12345678-1234-1234-1234-123456789ABC}"
+    UpgradeCode="{ABCDEF12-3456-7890-ABCD-EF1234567890}">
+
+  <CompanyDetails
+      Name="TwinThread"
+      Url="https://twinthread.com"
+      Email="support@twinthread.com" />
+
+  <Components Description="TwinThread LOI Plugin Components">
+    <RuntimeRequirements
+        OS="Win64"
+        Platform="Civil 3D"
+        SeriesMin="R24.0"
+        SeriesMax="R27.0" />
+
+    <ComponentEntry
+        AppName="TwinThreadLOI"
+        ModuleName="./Contents/Windows/TwinThread.Civil3D.LOI.dll"
+        AppDescription="TwinThread Level of Information Plugin"
+        LoadOnCommandInvocation="False"
+        LoadOnAutoCADStartup="True">
+      <Commands GroupName="TwinThread">
+        <Command Global="TT_APPLY_SCHEMA" Local="TT_APPLY_SCHEMA" />
+        <Command Global="TT_CLEAR_SCHEMA" Local="TT_CLEAR_SCHEMA" />
+      </Commands>
+    </ComponentEntry>
+  </Components>
+</ApplicationPackage>
