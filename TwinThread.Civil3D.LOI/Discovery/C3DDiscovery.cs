@@ -252,7 +252,7 @@ namespace TwinThread.Civil3D.LOI.Discovery
                     {
                         try
                         {
-                            Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Entity;
+                            Autodesk.AutoCAD.DatabaseServices.Entity ent = tr.GetObject(objId, OpenMode.ForWrite) as Autodesk.AutoCAD.DatabaseServices.Entity;
                             if (ent is Solid3d solid)
                             {
                                 contexts.Add(new EntityContext
@@ -304,10 +304,11 @@ namespace TwinThread.Civil3D.LOI.Discovery
         {
             try
             {
-                if (corridor.BaselineCount > 0)
+                if (corridor.Baselines != null && corridor.Baselines.Count > 0)
                 {
                     var baseline = corridor.Baselines[0];
-                    return baseline?.AlignmentName ?? "";
+                    // Baseline.Name typically contains or references the alignment
+                    return baseline?.Name ?? "";
                 }
             }
             catch { }
@@ -318,12 +319,13 @@ namespace TwinThread.Civil3D.LOI.Discovery
         {
             try
             {
-                if (corridor.BaselineCount > 0)
+                if (corridor.Baselines != null && corridor.Baselines.Count > 0)
                 {
                     var baseline = corridor.Baselines[0];
-                    if (baseline != null && baseline.BaselineRegions.Count > 0)
+                    if (baseline != null && baseline.BaselineRegions != null && baseline.BaselineRegions.Count > 0)
                     {
-                        return baseline.BaselineRegions[0]?.AssemblyName ?? "";
+                        // BaselineRegion.Name is the closest we can get without resolving AssemblyId
+                        return baseline.BaselineRegions[0]?.Name ?? "";
                     }
                 }
             }
@@ -336,14 +338,17 @@ namespace TwinThread.Civil3D.LOI.Discovery
             try
             {
                 List<string> regionNames = new List<string>();
-                if (corridor.BaselineCount > 0)
+                if (corridor.Baselines != null && corridor.Baselines.Count > 0)
                 {
                     var baseline = corridor.Baselines[0];
-                    if (baseline != null)
+                    if (baseline != null && baseline.BaselineRegions != null)
                     {
                         foreach (BaselineRegion region in baseline.BaselineRegions)
                         {
-                            regionNames.Add(region.Name);
+                            if (region != null && !string.IsNullOrEmpty(region.Name))
+                            {
+                                regionNames.Add(region.Name);
+                            }
                         }
                     }
                 }
