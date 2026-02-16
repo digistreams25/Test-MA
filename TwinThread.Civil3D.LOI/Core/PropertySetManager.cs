@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.Aec.PropertyData;
@@ -88,25 +89,36 @@ namespace TwinThread.Civil3D.LOI.Core
                 if (string.IsNullOrWhiteSpace(applicability) || applicability == "All")
                 {
                     // Apply to all entities
-                    psd.SetAppliesToFilter(new[] { "AcDbEntity" }, false);
+                    var appliesTo = new StringCollection();
+                    appliesTo.Add("AcDbEntity");
+                    psd.SetAppliesToFilter(appliesTo, false);
                 }
                 else if (applicability.StartsWith("DXF:", StringComparison.OrdinalIgnoreCase))
                 {
                     // DXF-based filter (e.g., "DXF:LINE,ARC,CIRCLE")
                     string[] dxfNames = applicability.Substring(4).Split(',');
-                    psd.SetAppliesToFilter(dxfNames.Select(d => d.Trim()).ToArray(), false);
+                    var appliesTo = new StringCollection();
+                    foreach (string name in dxfNames)
+                    {
+                        appliesTo.Add(name.Trim());
+                    }
+                    psd.SetAppliesToFilter(appliesTo, false);
                 }
                 else
                 {
                     // Civil 3D object types or custom filter
-                    psd.SetAppliesToFilter(new[] { applicability }, false);
+                    var appliesTo = new StringCollection();
+                    appliesTo.Add(applicability);
+                    psd.SetAppliesToFilter(appliesTo, false);
                 }
             }
             catch (Exception ex)
             {
                 // Log error but don't fail - default to all entities
                 System.Diagnostics.Debug.WriteLine($"Applicability filter error: {ex.Message}");
-                psd.SetAppliesToFilter(new[] { "AcDbEntity" }, false);
+                var appliesTo = new StringCollection();
+                appliesTo.Add("AcDbEntity");
+                psd.SetAppliesToFilter(appliesTo, false);
             }
         }
 
@@ -123,9 +135,9 @@ namespace TwinThread.Civil3D.LOI.Core
                 // Check if property already exists
                 if (!forceAdd)
                 {
-                    for (int i = 0; i < psd.PropertyDefinitions.Count; i++)
+                    for (int i = 0; i < psd.Definitions.Count; i++)
                     {
-                        var existingDef = psd.PropertyDefinitions[i];
+                        var existingDef = psd.Definitions[i];
                         if (existingDef.Name == param.Name)
                         {
                             propDef = existingDef;
@@ -147,7 +159,7 @@ namespace TwinThread.Civil3D.LOI.Core
                     propDef.DataType = MapStorageTypeToAecDataType(param.StorageType);
                     propDef.DefaultData = GetDefaultValue(param.DefaultValue, propDef.DataType);
 
-                    psd.PropertyDefinitions.Add(propDef);
+                    psd.Definitions.Add(propDef);
                 }
             }
             catch (Exception ex)
@@ -243,9 +255,8 @@ namespace TwinThread.Civil3D.LOI.Core
                         }
                     }
 
-                    // Attach new property set
-                    PropertySet newPs = PropertySet.Attach(psd, entity);
-                    tr.AddNewlyCreatedDBObject(newPs, true);
+                    // Attach new property set using PropertyDataServices
+                    PropertyDataServices.AddPropertySet(entity, propertySetDefId);
 
                     tr.Commit();
                     return true;
@@ -280,9 +291,9 @@ namespace TwinThread.Civil3D.LOI.Core
                         {
                             // Find property by name
                             PropertySetDefinition psd = tr.GetObject(ps.PropertySetDefinition, OpenMode.ForRead) as PropertySetDefinition;
-                            for (int i = 0; i < psd.PropertyDefinitions.Count; i++)
+                            for (int i = 0; i < psd.Definitions.Count; i++)
                             {
-                                if (psd.PropertyDefinitions[i].Name == propertyName)
+                                if (psd.Definitions[i].Name == propertyName)
                                 {
                                     ps.SetAt(i, value);
                                     tr.Commit();
@@ -323,9 +334,9 @@ namespace TwinThread.Civil3D.LOI.Core
                         if (ps != null && ps.PropertySetDefinition == propertySetDefId)
                         {
                             PropertySetDefinition psd = tr.GetObject(ps.PropertySetDefinition, OpenMode.ForRead) as PropertySetDefinition;
-                            for (int i = 0; i < psd.PropertyDefinitions.Count; i++)
+                            for (int i = 0; i < psd.Definitions.Count; i++)
                             {
-                                if (psd.PropertyDefinitions[i].Name == propertyName)
+                                if (psd.Definitions[i].Name == propertyName)
                                 {
                                     object val = ps.GetAt(i);
                                     tr.Commit();
