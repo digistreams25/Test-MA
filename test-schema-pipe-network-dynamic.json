@@ -1,0 +1,244 @@
+{
+  "projectId": "test-dynamic-properties",
+  "projectName": "Pipe Network Dynamic Property Test",
+  "milestone": {
+    "id": "milestone-001",
+    "name": "Testing Dynamic PropertyResolver"
+  },
+  "schemaElements": [
+    {
+      "id": "pipe-network-comprehensive",
+      "name": "PN-Test - All Pipes",
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAll": [
+          { "kind": "networkEquals", "value": "PN-Test" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Network_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "networkName",
+          "isRequired": false
+        },
+        {
+          "name": "Pipe_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "name",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Family",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partFamily",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Size",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partSize",
+          "isRequired": false
+        },
+        {
+          "name": "Length_3D",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Length3D",
+          "isRequired": false
+        },
+        {
+          "name": "Inner_Diameter",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "InnerDiameter",
+          "isRequired": false
+        },
+        {
+          "name": "Outer_Diameter",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "OuterDiameter",
+          "isRequired": false
+        },
+        {
+          "name": "Wall_Thickness",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "WallThickness",
+          "isRequired": false
+        },
+        {
+          "name": "Slope",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Slope",
+          "isRequired": false
+        },
+        {
+          "name": "Start_Invert",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "StartInvert",
+          "isRequired": false
+        },
+        {
+          "name": "End_Invert",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "EndInvert",
+          "isRequired": false
+        },
+        {
+          "name": "Flow_Direction",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "FlowDirection",
+          "isRequired": false
+        },
+        {
+          "name": "Style_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "StyleName",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Layer",
+          "isRequired": false
+        },
+        {
+          "name": "Handle",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Handle",
+          "isRequired": false
+        },
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "PVC",
+          "isRequired": false
+        },
+        {
+          "name": "Installation_Date",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "2026-02-16",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "structure-network-comprehensive",
+      "name": "PN-Test - All Structures",
+      "c3d": {
+        "targets": ["structure"],
+        "matchAll": [
+          { "kind": "networkEquals", "value": "PN-Test" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Network_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "networkName",
+          "isRequired": false
+        },
+        {
+          "name": "Structure_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "name",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Family",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partFamily",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Size",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partSize",
+          "isRequired": false
+        },
+        {
+          "name": "Rim_Elevation",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "RimElevation",
+          "isRequired": false
+        },
+        {
+          "name": "Sump_Elevation",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "SumpElevation",
+          "isRequired": false
+        },
+        {
+          "name": "Depth",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Depth",
+          "isRequired": false
+        },
+        {
+          "name": "Inner_Diameter",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "InnerDiameter",
+          "isRequired": false
+        },
+        {
+          "name": "Style_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "StyleName",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Layer",
+          "isRequired": false
+        },
+        {
+          "name": "Handle",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "Handle",
+          "isRequired": false
+        },
+        {
+          "name": "Structure_Type",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Manhole",
+          "isRequired": false
+        },
+        {
+          "name": "Installation_Date",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "2026-02-16",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

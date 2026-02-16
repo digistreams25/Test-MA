@@ -14,11 +14,13 @@ namespace TwinThread.Civil3D.LOI.Core
     {
         private PropertySetManager _propertySetManager;
         private Editor _editor;
+        private PropertyResolver _propertyResolver;
 
         public PropertySetValueAssigner(PropertySetManager manager, Editor editor)
         {
             _propertySetManager = manager;
             _editor = editor;
+            _propertyResolver = new PropertyResolver();
         }
 
         /// <summary>
@@ -223,35 +225,41 @@ namespace TwinThread.Civil3D.LOI.Core
         {
             string rule = param.MappingRule ?? "name";
 
-            foreach (var ctx in contexts)
+            using (Transaction tr = db.TransactionManager.StartTransaction())
             {
-                try
+                foreach (var ctx in contexts)
                 {
-                    string value = ExtractValueFromRule(ctx, rule);
-
-                    if (_propertySetManager.SetPropertyValue(ctx.ObjectId, propertySetDefId, param.Name, value, db))
+                    try
                     {
-                        result.Updated++;
+                        string value = ExtractValueFromRule(ctx, rule, tr);
+
+                        if (_propertySetManager.SetPropertyValue(ctx.ObjectId, propertySetDefId, param.Name, value, db))
+                        {
+                            result.Updated++;
+                        }
+                        else
+                        {
+                            result.Failed++;
+                            result.Errors.Add($"Handle {ctx.Handle}: Failed to set '{param.Name}'");
+                        }
                     }
-                    else
+                    catch (Exception ex)
                     {
                         result.Failed++;
-                        result.Errors.Add($"Handle {ctx.Handle}: Failed to set '{param.Name}'");
+                        result.Errors.Add($"Handle {ctx.Handle}: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    result.Failed++;
-                    result.Errors.Add($"Handle {ctx.Handle}: {ex.Message}");
-                }
+                tr.Commit();
             }
         }
 
         /// <summary>
         /// Extract value from entity context based on mapping rule
+        /// Supports both simple context properties and dynamic PropertyResolver paths
         /// </summary>
-        private string ExtractValueFromRule(EntityContext ctx, string rule)
+        private string ExtractValueFromRule(EntityContext ctx, string rule, Transaction tr)
         {
+            // First check for simple context properties (backward compatibility)
             switch (rule.ToLowerInvariant())
             {
                 case "handle":
@@ -284,9 +292,51 @@ namespace TwinThread.Civil3D.LOI.Core
                 case "shapecode":
                 case "shapecodename":
                     return ctx.ShapeCodeName ?? "";
-                default:
-                    return "";
             }
+
+            // If not a simple property, try PropertyResolver for dynamic property paths
+            // Format: "Pipe.Length3D", "Structure.RimElevation", etc.
+            try
+            {
+                using (Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForRead) as Entity)
+                {
+                    if (entity != null)
+                    {
+                        object resolvedValue = _propertyResolver.ResolveProperty(entity, rule, tr);
+                        if (resolvedValue != null)
+                        {
+                            return FormatPropertyValue(resolvedValue);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"PropertyResolver failed for rule '{rule}': {ex.Message}");
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Format property value for storage as string
+        /// </summary>
+        private string FormatPropertyValue(object value)
+        {
+            if (value == null)
+                return "";
+
+            // Format specific types
+            if (value is double d)
+                return d.ToString("F3");
+            else if (value is int i)
+                return i.ToString();
+            else if (value is Autodesk.AutoCAD.Geometry.Point3d pt)
+                return $"{pt.X:F3}, {pt.Y:F3}, {pt.Z:F3}";
+            else if (value is Autodesk.AutoCAD.Geometry.Point2d pt2)
+                return $"{pt2.X:F3}, {pt2.Y:F3}";
+            else
+                return value.ToString();
         }
     }
 
