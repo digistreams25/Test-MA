@@ -286,7 +286,9 @@ namespace TwinThread.Civil3D.LOI.Core
 
                 case "PartSizeName":
                 case "PartSize":
-                    return pressurePipe.PartSizeName;
+                    // Note: PressurePipe may not have PartSizeName in all Civil 3D versions
+                    try { return pressurePipe.OuterDiameter.ToString("F3"); }
+                    catch { return ""; }
 
                 case "PartDescription":
                     return pressurePipe.Description;
@@ -334,7 +336,9 @@ namespace TwinThread.Civil3D.LOI.Core
                     return fitting.Position;
 
                 case "Rotation":
-                    return fitting.Rotation;
+                    // Note: PressureFitting may not have Rotation property
+                    LogUnsupportedPath($"PressureFitting.Rotation");
+                    return null;
 
                 // Part properties
                 case "PartFamilyName":
@@ -343,7 +347,9 @@ namespace TwinThread.Civil3D.LOI.Core
 
                 case "PartSizeName":
                 case "PartSize":
-                    return fitting.PartSizeName;
+                    // Note: PressureFitting may not have PartSizeName in all Civil 3D versions
+                    LogUnsupportedPath($"PressureFitting.PartSizeName");
+                    return null;
 
                 case "PartDescription":
                     return fitting.Description;
@@ -387,7 +393,9 @@ namespace TwinThread.Civil3D.LOI.Core
                     return appurtenance.Position;
 
                 case "Rotation":
-                    return appurtenance.Rotation;
+                    // Note: PressureAppurtenance may not have Rotation property
+                    LogUnsupportedPath($"PressureAppurtenance.Rotation");
+                    return null;
 
                 // Part properties
                 case "PartFamilyName":
@@ -396,7 +404,9 @@ namespace TwinThread.Civil3D.LOI.Core
 
                 case "PartSizeName":
                 case "PartSize":
-                    return appurtenance.PartSizeName;
+                    // Note: PressureAppurtenance may not have PartSizeName in all Civil 3D versions
+                    LogUnsupportedPath($"PressureAppurtenance.PartSizeName");
+                    return null;
 
                 case "PartDescription":
                     return appurtenance.Description;
@@ -527,7 +537,15 @@ namespace TwinThread.Civil3D.LOI.Core
                     return solid.Material;
 
                 case "Volume":
-                    return solid.MassProperties?.Volume ?? 0.0;
+                    try
+                    {
+                        var massProps = solid.MassProperties;
+                        return massProps.Volume;
+                    }
+                    catch
+                    {
+                        return 0.0;
+                    }
 
                 default:
                     LogUnsupportedPath($"Solid3d.{propertyName}");
