@@ -72,6 +72,22 @@ namespace TwinThread.Civil3D.LOI.Commands
                 var allParameters = new List<SchemaElementParameter>();
                 var paramNames = new HashSet<string>();
 
+                // Add metadata field definitions (these are written by LOIValidator)
+                string[] metadataFields = {
+                    "tt.projectId", "tt.projectName", "tt.milestoneId", "tt.milestoneName",
+                    "tt.schemaElementId", "tt.schemaElementName", "tt.updatedAtUtc",
+                    "tt.loi.status", "tt.loi.missingFields"
+                };
+                foreach (var fieldName in metadataFields)
+                {
+                    allParameters.Add(new SchemaElementParameter
+                    {
+                        Name = fieldName,
+                        StorageType = "text"
+                    });
+                    paramNames.Add(fieldName);
+                }
+
                 foreach (var element in schema.SchemaElements)
                 {
                     if (element.SchemaElementParameters != null)
@@ -188,10 +204,52 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 {
                                     propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database);
 
-                                    // Write each LOI value to PropertySet
+                                    // Resolve and write dynamic properties using PropertyResolver
+                                    PropertyResolver propResolver = new PropertyResolver();
+
+                                    foreach (var param in matchedElement.SchemaElementParameters)
+                                    {
+                                        object value = null;
+
+                                        // Determine value based on valueMode
+                                        if (param.ValueMode == "Rule" && !string.IsNullOrWhiteSpace(param.MappingRule))
+                                        {
+                                            // Use PropertyResolver to get live value from object
+                                            value = propResolver.ResolveProperty(entity, param.MappingRule, tr);
+                                        }
+                                        else if (param.ValueMode == "Manual" && !string.IsNullOrWhiteSpace(param.DefaultValue))
+                                        {
+                                            // Use static default value
+                                            value = param.DefaultValue;
+                                        }
+                                        else if (param.ValueMode == "Global" && !string.IsNullOrWhiteSpace(param.DefaultValue))
+                                        {
+                                            // Use global default value
+                                            value = param.DefaultValue;
+                                        }
+                                        else if (Constants.LoiFieldNames.Contains(param.Name))
+                                        {
+                                            // For LOI fields, use value from xdata
+                                            if (xdata.TryGetValue(param.Name, out string xdataValue))
+                                            {
+                                                value = xdataValue;
+                                            }
+                                        }
+
+                                        // Write to PropertySet (convert nulls to empty string)
+                                        if (value != null)
+                                        {
+                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, value, acDoc.Database);
+                                        }
+                                    }
+
+                                    // Also write metadata fields from xdata
                                     foreach (var kvp in xdata)
                                     {
-                                        propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                        if (kvp.Key.StartsWith("tt."))
+                                        {
+                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                        }
                                     }
                                 }
                             }
