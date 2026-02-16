@@ -323,6 +323,90 @@
       }
     },
     {
+      "id": "elem-corridor-solids",
+      "name": "Corridor Surface Solids",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "SOLID-COR-100"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "XYZ Civil Consultants"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "DD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "In Progress"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Topsoil/Sod"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S3"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["solid"],
+        "matchAny": [
+          {
+            "kind": "layerContains",
+            "value": "SOLIDS - Corridor"
+          },
+          {
+            "kind": "layerRegex",
+            "value": "^SOLIDS.*Corridor.*"
+          },
+          {
+            "kind": "layerContains",
+            "value": "Top_Datum"
+          }
+        ],
+        "matchAll": []
+      }
+    },
+    {
       "id": "elem-retaining-walls",
       "name": "Retaining Walls (3D Solids)",
       "schemaElementParameters": [

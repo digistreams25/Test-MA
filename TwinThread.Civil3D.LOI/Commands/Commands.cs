@@ -267,5 +267,305 @@ namespace TwinThread.Civil3D.LOI.Commands
                 ed.WriteMessage("\n\nERROR: {0}", ex.Message);
             }
         }
+        [CommandMethod("TT_INSPECT")]
+        public void InspectObject()
+        {
+            Document acDoc = Application.DocumentManager.MdiActiveDocument;
+            if (acDoc == null)
+            {
+                System.Windows.Forms.MessageBox.Show("No active document found.");
+                return;
+            }
+
+            Editor ed = acDoc.Editor;
+
+            try
+            {
+                // Prompt user to select object
+                PromptEntityOptions peo = new PromptEntityOptions("\nSelect object to inspect LOI data: ");
+                PromptEntityResult per = ed.GetEntity(peo);
+
+                if (per.Status != PromptStatus.OK)
+                {
+                    ed.WriteMessage("\nCommand cancelled.");
+                    return;
+                }
+
+                using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
+                {
+                    DBObject dbObj = tr.GetObject(per.ObjectId, OpenMode.ForRead);
+                    Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
+
+                    if (entity == null)
+                    {
+                        ed.WriteMessage("\nSelected object is not a valid entity.");
+                        return;
+                    }
+
+                    ed.WriteMessage("\n\n=== TwinThread LOI Inspector ===");
+                    ed.WriteMessage("\nObject Type: {0}", entity.GetType().Name);
+                    ed.WriteMessage("\nHandle: {0}", entity.Handle);
+                    ed.WriteMessage("\nLayer: {0}", entity.Layer);
+
+                    // Read XData
+                    XDataStore xdataStore = new XDataStore();
+                    Dictionary<string, string> xdata = xdataStore.ReadXDataToDictionary(entity);
+
+                    if (xdata.Count == 0)
+                    {
+                        ed.WriteMessage("\n\n*** NO LOI DATA FOUND ***");
+                        ed.WriteMessage("\nThis object has no TWINTHREAD XData.");
+                        ed.WriteMessage("\nRun TT_APPLY_SCHEMA to add LOI data.");
+                    }
+                    else
+                    {
+                        ed.WriteMessage("\n\n--- LOI Status ---");
+                        string status = xdata.ContainsKey(Constants.LoiStatus) ? xdata[Constants.LoiStatus] : "Unknown";
+                        string statusIcon = status == Constants.StatusPass ? "[PASS]" : "[WARN]";
+                        ed.WriteMessage("\nStatus: {0} {1}", statusIcon, status);
+
+                        if (xdata.ContainsKey(Constants.LoiLevel))
+                            ed.WriteMessage("\nLOI Level: {0}", xdata[Constants.LoiLevel]);
+
+                        if (xdata.ContainsKey(Constants.SchemaElement))
+                            ed.WriteMessage("\nSchema Element: {0}", xdata[Constants.SchemaElement]);
+
+                        if (xdata.ContainsKey(Constants.Milestone))
+                            ed.WriteMessage("\nMilestone: {0}", xdata[Constants.Milestone]);
+
+                        ed.WriteMessage("\n\n--- Parameters ---");
+                        foreach (var kvp in xdata)
+                        {
+                            // Skip internal fields
+                            if (kvp.Key == Constants.LoiStatus ||
+                                kvp.Key == Constants.LoiLevel ||
+                                kvp.Key == Constants.SchemaElement ||
+                                kvp.Key == Constants.Milestone)
+                                continue;
+
+                            ed.WriteMessage("\n  {0}: {1}", kvp.Key, kvp.Value);
+                        }
+
+                        ed.WriteMessage("\n\nTotal parameters: {0}", xdata.Count);
+                    }
+
+                    tr.Commit();
+                }
+
+                ed.WriteMessage("\n\n=================================\n");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage("\n\nERROR: {0}", ex.Message);
+            }
+        }
+
+        [CommandMethod("TT_REPORT")]
+        public void ExportReport()
+        {
+            Document acDoc = Application.DocumentManager.MdiActiveDocument;
+            if (acDoc == null)
+            {
+                System.Windows.Forms.MessageBox.Show("No active document found.");
+                return;
+            }
+
+            Editor ed = acDoc.Editor;
+            CivilDocument civilDoc = CivilApplication.ActiveDocument;
+
+            try
+            {
+                // Prompt for output file path
+                PromptStringOptions pso = new PromptStringOptions("\nEnter output file path (CSV): ");
+                pso.AllowSpaces = true;
+                pso.DefaultValue = System.IO.Path.Combine(
+                    System.IO.Path.GetDirectoryName(acDoc.Name),
+                    System.IO.Path.GetFileNameWithoutExtension(acDoc.Name) + "_LOI_Report.csv"
+                );
+                PromptResult pr = ed.GetString(pso);
+
+                if (pr.Status != PromptStatus.OK)
+                {
+                    ed.WriteMessage("\nCommand cancelled.");
+                    return;
+                }
+
+                string outputPath = pr.StringResult;
+
+                ed.WriteMessage("\n--- Generating LOI Report ---");
+
+                // Discover all objects
+                C3DDiscovery discovery = new C3DDiscovery();
+                List<EntityContext> contexts = discovery.DiscoverAll(civilDoc, acDoc);
+
+                XDataStore xdataStore = new XDataStore();
+                List<string> reportLines = new List<string>();
+
+                // CSV Header
+                reportLines.Add("Handle,ObjectType,Name,Layer,LOI_Status,LOI_Level,Schema_Element,Milestone,PDS_Code,Company_Name,Design_Stage,Design_Status,Material,Suitability_Code");
+
+                int exported = 0;
+
+                using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
+                {
+                    foreach (EntityContext ctx in contexts)
+                    {
+                        if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+                            continue;
+
+                        try
+                        {
+                            DBObject dbObj = tr.GetObject(ctx.ObjectId, OpenMode.ForRead);
+                            Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
+
+                            if (entity == null)
+                                continue;
+
+                            Dictionary<string, string> xdata = xdataStore.ReadXDataToDictionary(entity);
+
+                            if (xdata.Count == 0)
+                                continue; // Skip objects without LOI data
+
+                            // Build CSV line
+                            string line = string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\"",
+                                ctx.Handle.ToString(),
+                                ctx.ObjectType,
+                                EscapeCsv(ctx.Name),
+                                EscapeCsv(ctx.Layer),
+                                xdata.ContainsKey(Constants.LoiStatus) ? xdata[Constants.LoiStatus] : "",
+                                xdata.ContainsKey(Constants.LoiLevel) ? xdata[Constants.LoiLevel] : "",
+                                xdata.ContainsKey(Constants.SchemaElement) ? EscapeCsv(xdata[Constants.SchemaElement]) : "",
+                                xdata.ContainsKey(Constants.Milestone) ? EscapeCsv(xdata[Constants.Milestone]) : "",
+                                xdata.ContainsKey("PDS_Code") ? xdata["PDS_Code"] : "",
+                                xdata.ContainsKey("Company_Name") ? EscapeCsv(xdata["Company_Name"]) : "",
+                                xdata.ContainsKey("Design_Stage") ? xdata["Design_Stage"] : "",
+                                xdata.ContainsKey("Design_Status") ? EscapeCsv(xdata["Design_Status"]) : "",
+                                xdata.ContainsKey("Material") ? EscapeCsv(xdata["Material"]) : "",
+                                xdata.ContainsKey("Suitability_Code") ? xdata["Suitability_Code"] : ""
+                            );
+
+                            reportLines.Add(line);
+                            exported++;
+                        }
+                        catch
+                        {
+                            // Skip errors
+                        }
+                    }
+
+                    tr.Commit();
+                }
+
+                // Write to file
+                System.IO.File.WriteAllLines(outputPath, reportLines);
+
+                ed.WriteMessage("\n\nReport exported successfully!");
+                ed.WriteMessage("\nObjects exported: {0}", exported);
+                ed.WriteMessage("\nFile: {0}", outputPath);
+                ed.WriteMessage("\n\nOpen in Excel or any CSV viewer.");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage("\n\nERROR: {0}", ex.Message);
+            }
+        }
+
+        [CommandMethod("TT_HIGHLIGHT")]
+        public void HighlightByStatus()
+        {
+            Document acDoc = Application.DocumentManager.MdiActiveDocument;
+            if (acDoc == null)
+            {
+                System.Windows.Forms.MessageBox.Show("No active document found.");
+                return;
+            }
+
+            Editor ed = acDoc.Editor;
+            CivilDocument civilDoc = CivilApplication.ActiveDocument;
+
+            try
+            {
+                ed.WriteMessage("\n--- Highlighting Objects by LOI Status ---");
+                ed.WriteMessage("\n  Green (Color 3) = PASS");
+                ed.WriteMessage("\n  Yellow (Color 2) = WARN");
+                ed.WriteMessage("\n  White (Color 7) = No LOI Data");
+
+                // Discover all objects
+                C3DDiscovery discovery = new C3DDiscovery();
+                List<EntityContext> contexts = discovery.DiscoverAll(civilDoc, acDoc);
+
+                XDataStore xdataStore = new XDataStore();
+                int passCount = 0;
+                int warnCount = 0;
+                int noDataCount = 0;
+
+                using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
+                {
+                    foreach (EntityContext ctx in contexts)
+                    {
+                        if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+                            continue;
+
+                        try
+                        {
+                            DBObject dbObj = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite);
+                            Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
+
+                            if (entity == null)
+                                continue;
+
+                            Dictionary<string, string> xdata = xdataStore.ReadXDataToDictionary(entity);
+
+                            if (xdata.Count == 0)
+                            {
+                                entity.ColorIndex = 7; // White - No data
+                                noDataCount++;
+                            }
+                            else if (xdata.ContainsKey(Constants.LoiStatus))
+                            {
+                                if (xdata[Constants.LoiStatus] == Constants.StatusPass)
+                                {
+                                    entity.ColorIndex = 3; // Green - PASS
+                                    passCount++;
+                                }
+                                else
+                                {
+                                    entity.ColorIndex = 2; // Yellow - WARN
+                                    warnCount++;
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Skip errors
+                        }
+                    }
+
+                    tr.Commit();
+                }
+
+                ed.WriteMessage("\n\n--- Highlighting Complete ---");
+                ed.WriteMessage("\nGreen (PASS): {0}", passCount);
+                ed.WriteMessage("\nYellow (WARN): {0}", warnCount);
+                ed.WriteMessage("\nWhite (No Data): {0}", noDataCount);
+                ed.WriteMessage("\n\nRun REGEN to refresh display if needed.");
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage("\n\nERROR: {0}", ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Escape special characters for CSV format
+        /// </summary>
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            // Replace quotes with double quotes
+            return value.Replace("\"", "\"\"");
+        }
     }
 }
