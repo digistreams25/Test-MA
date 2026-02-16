@@ -33,6 +33,7 @@ namespace TwinThread.Civil3D.LOI.Core
 
                 PropertySetDefinition psd = null;
                 bool isNew = false;
+                bool shouldClearProperties = false;
 
                 // Check if definition exists
                 if (propSetDefs.Has(name, tr))
@@ -43,10 +44,9 @@ namespace TwinThread.Civil3D.LOI.Core
                     // Handle merge behavior
                     if (mergeBehavior == "Replace")
                     {
-                        // Delete and recreate
-                        psd.Erase();
-                        psd = null;
-                        isNew = true;
+                        // Clear all existing properties instead of erasing the definition
+                        // This avoids eDuplicateKey errors
+                        shouldClearProperties = true;
                     }
                 }
                 else
@@ -65,18 +65,29 @@ namespace TwinThread.Civil3D.LOI.Core
                     tr.AddNewlyCreatedDBObject(psd, true);
                 }
 
+                // Clear existing properties if Replace mode
+                if (shouldClearProperties && psd != null)
+                {
+                    // Remove all properties from the definition
+                    while (psd.Definitions.Count > 0)
+                    {
+                        psd.Definitions.RemoveAt(0);
+                    }
+                    System.Diagnostics.Debug.WriteLine($"Cleared all properties from existing PropertySet definition '{name}'");
+                }
+
                 // Set applicability
                 SetApplicability(psd, applicability, db, tr);
 
                 // Add or update properties
-                System.Diagnostics.Debug.WriteLine($"PropertySet '{name}': isNew={isNew}, mergeBehavior={mergeBehavior}, forceAdd={isNew || mergeBehavior == "Replace"}");
+                System.Diagnostics.Debug.WriteLine($"PropertySet '{name}': isNew={isNew}, mergeBehavior={mergeBehavior}, shouldClearProperties={shouldClearProperties}");
                 System.Diagnostics.Debug.WriteLine($"Adding {parameters.Count} properties to PropertySet definition");
 
                 foreach (var param in parameters)
                 {
                     try
                     {
-                        AddOrUpdateProperty(psd, param, isNew || mergeBehavior == "Replace");
+                        AddOrUpdateProperty(psd, param, isNew || shouldClearProperties);
                     }
                     catch (Exception ex)
                     {
