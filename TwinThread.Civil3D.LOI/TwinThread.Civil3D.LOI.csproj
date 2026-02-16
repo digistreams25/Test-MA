@@ -75,17 +75,6 @@
       <Private>False</Private>
     </Reference>
 
-    <!-- Property Data DLLs for Property Set Definitions -->
-    <Reference Include="Autodesk.Aec.PropertyData">
-      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\Autodesk.Aec.PropertyData.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-
-    <Reference Include="Autodesk.Aec.PropertyData.DatabaseServices">
-      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\Autodesk.Aec.PropertyData.DatabaseServices.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-
     <!-- System.Memory for ReadOnlySpan<T> support -->
     <Reference Include="System.Memory">
       <HintPath>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\Facades\System.Memory.dll</HintPath>
@@ -102,7 +91,7 @@
     <Compile Include="Discovery\C3DDiscovery.cs" />
     <Compile Include="Models\Schema.cs" />
     <Compile Include="Utilities\Constants.cs" />
-    <Compile Include="Utilities\PropertySetManager.cs" />
+    <!--<Compile Include="Utilities\PropertySetManager.cs" />-->
   </ItemGroup>
   <ItemGroup>
     <Folder Include="bin\" />
