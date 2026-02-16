@@ -235,8 +235,19 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 ed.WriteMessage("\n  ... and {0} more errors", result.Errors.Count - 10);
                         }
 
+                        // Write tracking XData for PropertySet mode
+                        ed.WriteMessage("\n\n--- Writing Tracking XData ---");
+                        int xdataWritten = WritePropertySetTrackingXData(
+                            group.Value,
+                            element,
+                            schema,
+                            psdId,
+                            acDoc.Database,
+                            ref passCount,
+                            ref warnCount);
+                        ed.WriteMessage("\nTracking XData written: {0}", xdataWritten);
+
                         processed += result.Updated;
-                        passCount += result.Updated; // Assume all are pass for now
                     }
                     catch (System.Exception ex)
                     {
@@ -415,6 +426,12 @@ namespace TwinThread.Civil3D.LOI.Commands
                         if (xdata.ContainsKey(Constants.MilestoneName))
                             ed.WriteMessage("\nMilestone: {0}", xdata[Constants.MilestoneName]);
 
+                        if (xdata.ContainsKey(Constants.StorageMode))
+                            ed.WriteMessage("\nStorage Mode: {0}", xdata[Constants.StorageMode]);
+
+                        if (xdata.ContainsKey(Constants.PropertySetName))
+                            ed.WriteMessage("\nProperty Set: {0}", xdata[Constants.PropertySetName]);
+
                         ed.WriteMessage("\n\n--- Parameters ---");
                         foreach (var kvp in xdata)
                         {
@@ -426,6 +443,8 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 kvp.Key == Constants.MilestoneId ||
                                 kvp.Key == Constants.ProjectId ||
                                 kvp.Key == Constants.ProjectName ||
+                                kvp.Key == Constants.StorageMode ||
+                                kvp.Key == Constants.PropertySetName ||
                                 kvp.Key == Constants.UpdatedAtUtc ||
                                 kvp.Key == Constants.LoiMissingFields)
                                 continue;
@@ -689,6 +708,100 @@ namespace TwinThread.Civil3D.LOI.Commands
             {
                 ed.WriteMessage("\n\nERROR: {0}", ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Write tracking XData for PropertySet storage mode
+        /// </summary>
+        private int WritePropertySetTrackingXData(
+            List<EntityContext> contexts,
+            SchemaElement element,
+            Schema schema,
+            ObjectId propertySetDefId,
+            Database db,
+            ref int passCount,
+            ref int warnCount)
+        {
+            int written = 0;
+            PropertySetManager propSetManager = new PropertySetManager();
+            LOIValidator validator = new LOIValidator();
+            XDataStore xdataStore = new XDataStore();
+
+            using (Transaction tr = db.TransactionManager.StartTransaction())
+            {
+                foreach (var ctx in contexts)
+                {
+                    try
+                    {
+                        Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite) as Entity;
+                        if (entity == null)
+                            continue;
+
+                        // Build tracking XData dictionary
+                        Dictionary<string, string> xdata = new Dictionary<string, string>();
+
+                        // Add basic metadata
+                        xdata[Constants.ProjectId] = schema.ProjectId ?? "";
+                        xdata[Constants.ProjectName] = schema.ProjectName ?? "";
+                        xdata[Constants.SchemaElementId] = element.Id ?? "";
+                        xdata[Constants.SchemaElementName] = element.Name ?? "";
+                        xdata[Constants.StorageMode] = "PropertySet";
+                        xdata[Constants.PropertySetName] = element.PropertySet?.Name ?? "";
+
+                        // Add milestone info
+                        if (schema.Milestone != null)
+                        {
+                            xdata[Constants.MilestoneId] = schema.Milestone.Id ?? "";
+                            xdata[Constants.MilestoneName] = schema.Milestone.Name ?? "";
+                        }
+
+                        // Validate property set values to determine status
+                        List<string> missingFields = new List<string>();
+                        foreach (var param in element.SchemaElementParameters)
+                        {
+                            if (param.IsRequired)
+                            {
+                                object value = propSetManager.GetPropertyValue(
+                                    ctx.ObjectId,
+                                    propertySetDefId,
+                                    param.Name,
+                                    db);
+
+                                if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
+                                {
+                                    missingFields.Add(param.Name);
+                                }
+                            }
+                        }
+
+                        // Set status based on validation
+                        if (missingFields.Count == 0)
+                        {
+                            xdata[Constants.LoiStatus] = Constants.StatusPass;
+                            xdata[Constants.LoiMissingFields] = "";
+                            passCount++;
+                        }
+                        else
+                        {
+                            xdata[Constants.LoiStatus] = Constants.StatusWarn;
+                            xdata[Constants.LoiMissingFields] = string.Join(";", missingFields);
+                            warnCount++;
+                        }
+
+                        // Write XData
+                        xdataStore.WriteXDataFromDictionary(entity, xdata);
+                        written++;
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"XData tracking write failed for {ctx.Handle}: {ex.Message}");
+                    }
+                }
+
+                tr.Commit();
+            }
+
+            return written;
         }
 
         /// <summary>

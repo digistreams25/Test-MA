@@ -17,6 +17,8 @@ namespace TwinThread.Civil3D.LOI.Utilities
         public const string MilestoneName = "tt.milestoneName";
         public const string SchemaElementId = "tt.schemaElementId";
         public const string SchemaElementName = "tt.schemaElementName";
+        public const string StorageMode = "tt.storageMode";
+        public const string PropertySetName = "tt.propertySetName";
         public const string UpdatedAtUtc = "tt.updatedAtUtc";
         public const string LoiStatus = "tt.loi.status";
         public const string LoiMissingFields = "tt.loi.missingFields";
