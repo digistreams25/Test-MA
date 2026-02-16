@@ -247,7 +247,22 @@ namespace TwinThread.Civil3D.LOI.Core
         private object GetDefaultValue(string defaultValue, AecDataType dataType)
         {
             if (string.IsNullOrWhiteSpace(defaultValue))
-                return null;
+            {
+                // Return type-appropriate defaults instead of null
+                // AutoCAD API throws ArgumentException if defaultData is null
+                switch (dataType)
+                {
+                    case AecDataType.Integer:
+                        return 0;
+                    case AecDataType.Real:
+                        return 0.0;
+                    case AecDataType.TrueFalse:
+                        return false;
+                    case AecDataType.Text:
+                    default:
+                        return "";  // Empty string, not null
+                }
+            }
 
             try
             {
@@ -266,7 +281,19 @@ namespace TwinThread.Civil3D.LOI.Core
             }
             catch
             {
-                return null;
+                // Return type-appropriate defaults on error
+                switch (dataType)
+                {
+                    case AecDataType.Integer:
+                        return 0;
+                    case AecDataType.Real:
+                        return 0.0;
+                    case AecDataType.TrueFalse:
+                        return false;
+                    case AecDataType.Text:
+                    default:
+                        return "";
+                }
             }
         }
 
