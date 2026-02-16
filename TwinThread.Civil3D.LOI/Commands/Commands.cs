@@ -73,8 +73,8 @@ namespace TwinThread.Civil3D.LOI.Commands
                 // Initialize components
                 MatchingEngine matcher = new MatchingEngine();
                 LOIValidator validator = new LOIValidator();
-                PropertySetManager propSetManager = new PropertySetManager();
-                PropertySetValueAssigner valueAssigner = new PropertySetValueAssigner(propSetManager, ed);
+                Core.PropertySetManager propSetManager = new Core.PropertySetManager();
+                Core.PropertySetValueAssigner valueAssigner = new Core.PropertySetValueAssigner(propSetManager, ed);
 
                 // Processing counters
                 int processed = 0;
@@ -723,7 +723,7 @@ namespace TwinThread.Civil3D.LOI.Commands
             ref int warnCount)
         {
             int written = 0;
-            PropertySetManager propSetManager = new PropertySetManager();
+            Core.PropertySetManager propSetManager = new Core.PropertySetManager();
             LOIValidator validator = new LOIValidator();
             XDataStore xdataStore = new XDataStore();
 
@@ -792,7 +792,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                         xdataStore.WriteXDataFromDictionary(entity, xdata);
                         written++;
                     }
-                    catch (Exception ex)
+                    catch (System.Exception ex)
                     {
                         System.Diagnostics.Debug.WriteLine($"XData tracking write failed for {ctx.Handle}: {ex.Message}");
                     }
