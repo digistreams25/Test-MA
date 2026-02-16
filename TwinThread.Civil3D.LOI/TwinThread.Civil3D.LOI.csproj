@@ -86,6 +86,8 @@
     <Compile Include="Core\EntityContext.cs" />
     <Compile Include="Core\LOIValidator.cs" />
     <Compile Include="Core\MatchingEngine.cs" />
+    <Compile Include="Core\PropertySetManager.cs" />
+    <Compile Include="Core\PropertySetValueAssigner.cs" />
     <Compile Include="Core\SchemaLoader.cs" />
     <Compile Include="Core\XDataStore.cs" />
     <Compile Include="Discovery\C3DDiscovery.cs" />
