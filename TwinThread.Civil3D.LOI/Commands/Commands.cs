@@ -63,6 +63,20 @@ namespace TwinThread.Civil3D.LOI.Commands
                 XDataStore xdataStore = new XDataStore();
                 xdataStore.EnsureRegApp(acDoc.Database);
 
+                // Ensure Property Set Definition exists
+                ed.WriteMessage("\nCreating Property Set Definition...");
+                PropertySetManager psManager = new PropertySetManager();
+                try
+                {
+                    psManager.EnsurePropertySetDefinition(acDoc.Database);
+                    ed.WriteMessage("\n  Property Set 'TwinThread LOI' ready.");
+                }
+                catch (System.Exception psEx)
+                {
+                    ed.WriteMessage("\n  Warning: Could not create Property Set Definition: {0}", psEx.Message);
+                    ed.WriteMessage("\n  LOI data will still be stored in XData.");
+                }
+
                 // Discover all objects
                 ed.WriteMessage("\n\nDiscovering Civil 3D objects...");
                 C3DDiscovery discovery = new C3DDiscovery();
@@ -140,6 +154,17 @@ namespace TwinThread.Civil3D.LOI.Commands
 
                             // Write XData
                             xdataStore.WriteXDataFromDictionary(entity, xdata);
+
+                            // Write to Property Set (for display in Properties palette)
+                            try
+                            {
+                                psManager.WriteToPropertySet(entity, xdata, tr);
+                            }
+                            catch
+                            {
+                                // Property sets might not be supported for this object type
+                                // XData is still written, so data is not lost
+                            }
 
                             // Update counters
                             processed++;
@@ -231,6 +256,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                 List<EntityContext> contexts = discovery.DiscoverAll(civilDoc, acDoc);
 
                 XDataStore xdataStore = new XDataStore();
+                PropertySetManager psManager = new PropertySetManager();
                 int cleared = 0;
 
                 using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
@@ -247,6 +273,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                             if (entity != null)
                             {
                                 xdataStore.RemoveXData(entity);
+                                psManager.RemovePropertySet(entity, tr);
                                 cleared++;
                             }
                         }
