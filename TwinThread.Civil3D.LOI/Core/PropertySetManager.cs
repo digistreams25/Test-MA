@@ -69,10 +69,23 @@ namespace TwinThread.Civil3D.LOI.Core
                 SetApplicability(psd, applicability, db, tr);
 
                 // Add or update properties
+                System.Diagnostics.Debug.WriteLine($"PropertySet '{name}': isNew={isNew}, mergeBehavior={mergeBehavior}, forceAdd={isNew || mergeBehavior == "Replace"}");
+                System.Diagnostics.Debug.WriteLine($"Adding {parameters.Count} properties to PropertySet definition");
+
                 foreach (var param in parameters)
                 {
-                    AddOrUpdateProperty(psd, param, isNew || mergeBehavior == "Replace");
+                    try
+                    {
+                        AddOrUpdateProperty(psd, param, isNew || mergeBehavior == "Replace");
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"EXCEPTION adding property '{param.Name}': {ex.Message}");
+                        // Continue with other properties
+                    }
                 }
+
+                System.Diagnostics.Debug.WriteLine($"PropertySet definition now has {psd.Definitions.Count} properties");
 
                 tr.Commit();
                 return psd.ObjectId;
@@ -142,6 +155,7 @@ namespace TwinThread.Civil3D.LOI.Core
                         {
                             propDef = existingDef;
                             exists = true;
+                            System.Diagnostics.Debug.WriteLine($"Property '{param.Name}' already exists in definition");
                             break;
                         }
                     }
@@ -150,6 +164,8 @@ namespace TwinThread.Civil3D.LOI.Core
                 // Create new property if needed
                 if (!exists)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Adding property '{param.Name}' to definition (type: {param.StorageType})");
+
                     propDef = new PropertyDefinition();
                     propDef.SetToStandard(psd.Database);
                     propDef.Name = param.Name;
@@ -169,11 +185,14 @@ namespace TwinThread.Civil3D.LOI.Core
                     propDef.DefaultData = GetDefaultValue(param.DefaultValue, propDef.DataType);
 
                     psd.Definitions.Add(propDef);
+
+                    System.Diagnostics.Debug.WriteLine($"Property '{param.Name}' added successfully");
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Property '{param.Name}' add/update error: {ex.Message}");
+                throw; // Re-throw so caller can see the error
             }
         }
 

@@ -115,7 +115,26 @@ namespace TwinThread.Civil3D.LOI.Commands
                         "Update",
                         "TwinThread Level of Information Properties");
 
-                    ed.WriteMessage("\nPropertySet definition created with {0} properties", allParameters.Count);
+                    // Verify properties were added
+                    using (Transaction verifyTr = acDoc.Database.TransactionManager.StartTransaction())
+                    {
+                        PropertySetDefinition psd = verifyTr.GetObject(propSetDefId, OpenMode.ForRead) as PropertySetDefinition;
+                        if (psd != null)
+                        {
+                            ed.WriteMessage("\nPropertySet definition '{0}' has {1} properties (expected {2})",
+                                psd.Name,
+                                psd.Definitions.Count,
+                                allParameters.Count);
+
+                            // List first 10 properties
+                            ed.WriteMessage("\nFirst 10 properties in definition:");
+                            for (int i = 0; i < Math.Min(10, psd.Definitions.Count); i++)
+                            {
+                                ed.WriteMessage("\n  [{0}] {1} ({2})", i, psd.Definitions[i].Name, psd.Definitions[i].DataType);
+                            }
+                        }
+                        verifyTr.Commit();
+                    }
                 }
 
                 // Discover all objects
