@@ -25,7 +25,8 @@ namespace TwinThread.Civil3D.LOI.Core
             List<SchemaElementParameter> parameters,
             string applicability,
             string mergeBehavior,
-            string description)
+            string description,
+            Autodesk.AutoCAD.EditorInput.Editor ed = null)
         {
             using (Transaction tr = db.TransactionManager.StartTransaction())
             {
@@ -91,7 +92,12 @@ namespace TwinThread.Civil3D.LOI.Core
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"EXCEPTION adding property '{param.Name}': {ex.Message}");
+                        string errorMsg = $"EXCEPTION adding property '{param.Name}': {ex.Message}";
+                        System.Diagnostics.Debug.WriteLine(errorMsg);
+                        if (ed != null)
+                        {
+                            ed.WriteMessage("\n  ERROR: " + errorMsg);
+                        }
                         // Continue with other properties
                     }
                 }

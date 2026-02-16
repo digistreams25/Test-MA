@@ -116,7 +116,8 @@ namespace TwinThread.Civil3D.LOI.Commands
                         allParameters,
                         "All",
                         "Replace",
-                        "TwinThread Level of Information Properties");
+                        "TwinThread Level of Information Properties",
+                        ed);
 
                     // Verify properties were added
                     using (Transaction verifyTr = acDoc.Database.TransactionManager.StartTransaction())
