@@ -6,6 +6,7 @@ using Autodesk.Aec.PropertyData;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 using TwinThread.Civil3D.LOI.Models;
 using TwinThread.Civil3D.LOI.Utilities;
+using AecDataType = Autodesk.Aec.PropertyData.DataType;
 
 namespace TwinThread.Civil3D.LOI.Core
 {
@@ -143,7 +144,7 @@ namespace TwinThread.Civil3D.LOI.Core
                     propDef.Description = param.Name;
 
                     // Set data type
-                    propDef.DataType = MapStorageTypeToDataType(param.StorageType);
+                    propDef.DataType = MapStorageTypeToAecDataType(param.StorageType);
                     propDef.DefaultData = GetDefaultValue(param.DefaultValue, propDef.DataType);
 
                     psd.PropertyDefinitions.Add(propDef);
@@ -158,35 +159,35 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <summary>
         /// Map schema storage type to Property Data type
         /// </summary>
-        private DataType MapStorageTypeToDataType(string storageType)
+        private AecDataType MapStorageTypeToAecDataType(string storageType)
         {
             if (string.IsNullOrWhiteSpace(storageType))
-                return DataType.Text;
+                return AecDataType.Text;
 
             switch (storageType.ToLowerInvariant())
             {
                 case "text":
                 case "string":
-                    return DataType.Text;
+                    return AecDataType.Text;
                 case "integer":
                 case "int":
-                    return DataType.Integer;
+                    return AecDataType.Integer;
                 case "real":
                 case "double":
                 case "decimal":
-                    return DataType.Real;
+                    return AecDataType.Real;
                 case "boolean":
                 case "bool":
-                    return DataType.TrueFalse;
+                    return AecDataType.TrueFalse;
                 default:
-                    return DataType.Text;
+                    return AecDataType.Text;
             }
         }
 
         /// <summary>
         /// Get default value based on data type
         /// </summary>
-        private object GetDefaultValue(string defaultValue, DataType dataType)
+        private object GetDefaultValue(string defaultValue, AecDataType dataType)
         {
             if (string.IsNullOrWhiteSpace(defaultValue))
                 return null;
@@ -195,13 +196,13 @@ namespace TwinThread.Civil3D.LOI.Core
             {
                 switch (dataType)
                 {
-                    case DataType.Integer:
+                    case AecDataType.Integer:
                         return int.TryParse(defaultValue, out int intVal) ? intVal : 0;
-                    case DataType.Real:
+                    case AecDataType.Real:
                         return double.TryParse(defaultValue, out double dblVal) ? dblVal : 0.0;
-                    case DataType.TrueFalse:
+                    case AecDataType.TrueFalse:
                         return bool.TryParse(defaultValue, out bool boolVal) && boolVal;
-                    case DataType.Text:
+                    case AecDataType.Text:
                     default:
                         return defaultValue;
                 }
