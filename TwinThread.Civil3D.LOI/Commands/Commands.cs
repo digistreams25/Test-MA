@@ -324,23 +324,25 @@ namespace TwinThread.Civil3D.LOI.Commands
                         string statusIcon = status == Constants.StatusPass ? "[PASS]" : "[WARN]";
                         ed.WriteMessage("\nStatus: {0} {1}", statusIcon, status);
 
-                        if (xdata.ContainsKey(Constants.LoiLevel))
-                            ed.WriteMessage("\nLOI Level: {0}", xdata[Constants.LoiLevel]);
+                        if (xdata.ContainsKey(Constants.SchemaElementName))
+                            ed.WriteMessage("\nSchema Element: {0}", xdata[Constants.SchemaElementName]);
 
-                        if (xdata.ContainsKey(Constants.SchemaElement))
-                            ed.WriteMessage("\nSchema Element: {0}", xdata[Constants.SchemaElement]);
-
-                        if (xdata.ContainsKey(Constants.Milestone))
-                            ed.WriteMessage("\nMilestone: {0}", xdata[Constants.Milestone]);
+                        if (xdata.ContainsKey(Constants.MilestoneName))
+                            ed.WriteMessage("\nMilestone: {0}", xdata[Constants.MilestoneName]);
 
                         ed.WriteMessage("\n\n--- Parameters ---");
                         foreach (var kvp in xdata)
                         {
                             // Skip internal fields
                             if (kvp.Key == Constants.LoiStatus ||
-                                kvp.Key == Constants.LoiLevel ||
-                                kvp.Key == Constants.SchemaElement ||
-                                kvp.Key == Constants.Milestone)
+                                kvp.Key == Constants.SchemaElementName ||
+                                kvp.Key == Constants.SchemaElementId ||
+                                kvp.Key == Constants.MilestoneName ||
+                                kvp.Key == Constants.MilestoneId ||
+                                kvp.Key == Constants.ProjectId ||
+                                kvp.Key == Constants.ProjectName ||
+                                kvp.Key == Constants.UpdatedAtUtc ||
+                                kvp.Key == Constants.LoiMissingFields)
                                 continue;
 
                             ed.WriteMessage("\n  {0}: {1}", kvp.Key, kvp.Value);
@@ -402,7 +404,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                 List<string> reportLines = new List<string>();
 
                 // CSV Header
-                reportLines.Add("Handle,ObjectType,Name,Layer,LOI_Status,LOI_Level,Schema_Element,Milestone,PDS_Code,Company_Name,Design_Stage,Design_Status,Material,Suitability_Code");
+                reportLines.Add("Handle,ObjectType,Name,Layer,LOI_Status,Schema_Element,Milestone,PDS_Code,Company_Name,Design_Stage,Design_Status,Material,Suitability_Code");
 
                 int exported = 0;
 
@@ -427,15 +429,14 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 continue; // Skip objects without LOI data
 
                             // Build CSV line
-                            string line = string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\",\"{13}\"",
+                            string line = string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\",\"{11}\",\"{12}\"",
                                 ctx.Handle.ToString(),
                                 ctx.ObjectType,
                                 EscapeCsv(ctx.Name),
                                 EscapeCsv(ctx.Layer),
                                 xdata.ContainsKey(Constants.LoiStatus) ? xdata[Constants.LoiStatus] : "",
-                                xdata.ContainsKey(Constants.LoiLevel) ? xdata[Constants.LoiLevel] : "",
-                                xdata.ContainsKey(Constants.SchemaElement) ? EscapeCsv(xdata[Constants.SchemaElement]) : "",
-                                xdata.ContainsKey(Constants.Milestone) ? EscapeCsv(xdata[Constants.Milestone]) : "",
+                                xdata.ContainsKey(Constants.SchemaElementName) ? EscapeCsv(xdata[Constants.SchemaElementName]) : "",
+                                xdata.ContainsKey(Constants.MilestoneName) ? EscapeCsv(xdata[Constants.MilestoneName]) : "",
                                 xdata.ContainsKey("PDS_Code") ? xdata["PDS_Code"] : "",
                                 xdata.ContainsKey("Company_Name") ? EscapeCsv(xdata["Company_Name"]) : "",
                                 xdata.ContainsKey("Design_Stage") ? xdata["Design_Stage"] : "",
