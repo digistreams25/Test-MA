@@ -216,6 +216,16 @@ namespace TwinThread.Civil3D.LOI.Commands
                                         {
                                             // Use PropertyResolver to get live value from object
                                             value = propResolver.ResolveProperty(entity, param.MappingRule, tr);
+
+                                            // DEBUG: Log resolved values for first few objects
+                                            if (processed < 2)
+                                            {
+                                                ed.WriteMessage("\n  DEBUG: {0} (rule:{1}) = {2} (type:{3})",
+                                                    param.Name,
+                                                    param.MappingRule,
+                                                    value?.ToString() ?? "NULL",
+                                                    value?.GetType().Name ?? "null");
+                                            }
                                         }
                                         else if (param.ValueMode == "Manual" && !string.IsNullOrWhiteSpace(param.DefaultValue))
                                         {
@@ -236,10 +246,12 @@ namespace TwinThread.Civil3D.LOI.Commands
                                             }
                                         }
 
-                                        // Write to PropertySet (convert nulls to empty string)
+                                        // Write to PropertySet
                                         if (value != null)
                                         {
-                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, value, acDoc.Database);
+                                            // Convert value to appropriate type for PropertySet
+                                            object propertySetValue = ConvertValueForPropertySet(value, param.StorageType);
+                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, propertySetValue, acDoc.Database);
                                         }
                                     }
 
@@ -312,6 +324,45 @@ namespace TwinThread.Civil3D.LOI.Commands
                 ed.WriteMessage("\n\nERROR: {0}", ex.Message);
                 ed.WriteMessage("\n{0}", ex.StackTrace);
             }
+        }
+
+        /// <summary>
+        /// Convert PropertyResolver values to appropriate types for PropertySet storage
+        /// Handles Point3d, enums, and other complex types
+        /// </summary>
+        private object ConvertValueForPropertySet(object value, string storageType)
+        {
+            if (value == null)
+                return "";
+
+            // Handle Point3d - convert to formatted string
+            if (value is Autodesk.AutoCAD.Geometry.Point3d point)
+            {
+                return $"{point.X:F3},{point.Y:F3},{point.Z:F3}";
+            }
+
+            // Handle Point2d
+            if (value is Autodesk.AutoCAD.Geometry.Point2d point2d)
+            {
+                return $"{point2d.X:F3},{point2d.Y:F3}";
+            }
+
+            // Handle numeric types based on storage type
+            if (storageType != null && storageType.ToLowerInvariant() == "text")
+            {
+                // Convert everything to string for text storage
+                if (value is double doubleVal)
+                    return doubleVal.ToString("F3");
+                if (value is int intVal)
+                    return intVal.ToString();
+                if (value is float floatVal)
+                    return floatVal.ToString("F3");
+
+                return value.ToString();
+            }
+
+            // Return as-is for numeric storage types
+            return value;
         }
 
         [CommandMethod("TT_CLEAR_SCHEMA")]
