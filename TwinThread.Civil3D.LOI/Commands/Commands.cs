@@ -73,6 +73,8 @@ namespace TwinThread.Civil3D.LOI.Commands
                 // Initialize components
                 MatchingEngine matcher = new MatchingEngine();
                 LOIValidator validator = new LOIValidator();
+                PropertySetManager propSetManager = new PropertySetManager();
+                PropertySetValueAssigner valueAssigner = new PropertySetValueAssigner(propSetManager, ed);
 
                 // Processing counters
                 int processed = 0;
@@ -82,6 +84,9 @@ namespace TwinThread.Civil3D.LOI.Commands
                 int noMatch = 0;
                 int errors = 0;
                 List<string> unmatchedTypes = new List<string>();
+
+                // Group contexts by matched schema element
+                Dictionary<string, List<EntityContext>> elementGroups = new Dictionary<string, List<EntityContext>>();
 
                 // Process each object
                 using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
@@ -127,28 +132,44 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 continue;
                             }
 
-                            // Apply schema element (fill-missing logic)
-                            validator.ApplySchemaElement(xdata, matchedElement, schema);
+                            // Check storage mode
+                            string storageMode = matchedElement.StorageMode ?? "XData";
 
-                            // Check XData size
-                            if (!xdataStore.IsXDataSizeValid(xdata))
+                            if (storageMode.Equals("PropertySet", StringComparison.OrdinalIgnoreCase))
                             {
-                                errors++;
-                                ed.WriteMessage("\nError: XData too large for object {0}", ctx.Handle);
-                                continue;
+                                // Group by element for batch property set processing
+                                if (!elementGroups.ContainsKey(matchedElement.Id))
+                                {
+                                    elementGroups[matchedElement.Id] = new List<EntityContext>();
+                                }
+                                elementGroups[matchedElement.Id].Add(ctx);
+                                matched++;
                             }
-
-                            // Write XData
-                            xdataStore.WriteXDataFromDictionary(entity, xdata);
-
-                            // Update counters
-                            processed++;
-                            matched++;
-
-                            if (xdata[Constants.LoiStatus] == Constants.StatusPass)
-                                passCount++;
                             else
-                                warnCount++;
+                            {
+                                // XData mode (existing logic)
+                                validator.ApplySchemaElement(xdata, matchedElement, schema);
+
+                                // Check XData size
+                                if (!xdataStore.IsXDataSizeValid(xdata))
+                                {
+                                    errors++;
+                                    ed.WriteMessage("\nError: XData too large for object {0}", ctx.Handle);
+                                    continue;
+                                }
+
+                                // Write XData
+                                xdataStore.WriteXDataFromDictionary(entity, xdata);
+
+                                // Update counters
+                                processed++;
+                                matched++;
+
+                                if (xdata[Constants.LoiStatus] == Constants.StatusPass)
+                                    passCount++;
+                                else
+                                    warnCount++;
+                            }
                         }
                         catch (System.Exception ex)
                         {
@@ -158,6 +179,70 @@ namespace TwinThread.Civil3D.LOI.Commands
                     }
 
                     tr.Commit();
+                }
+
+                // Process property set groups
+                foreach (var group in elementGroups)
+                {
+                    SchemaElement element = schema.SchemaElements.FirstOrDefault(e => e.Id == group.Key);
+                    if (element == null || element.PropertySet == null)
+                        continue;
+
+                    try
+                    {
+                        ed.WriteMessage("\n\n--- Processing Property Set: {0} ---", element.PropertySet.Name);
+                        ed.WriteMessage("\nObjects: {0}", group.Value.Count);
+
+                        // Create or update property set definition
+                        ObjectId psdId = propSetManager.EnsurePropertySetDefinition(
+                            acDoc.Database,
+                            element.PropertySet.Name,
+                            element.SchemaElementParameters,
+                            element.PropertySet.Applicability,
+                            element.PropertySet.MergeBehavior ?? "Update",
+                            element.PropertySet.Description);
+
+                        // Attach property sets to objects
+                        int attached = 0;
+                        foreach (var ctx in group.Value)
+                        {
+                            if (propSetManager.AttachPropertySet(ctx.ObjectId, psdId, acDoc.Database))
+                            {
+                                attached++;
+                            }
+                        }
+
+                        ed.WriteMessage("\nProperty sets attached: {0}", attached);
+
+                        // Assign values
+                        ed.WriteMessage("\n\n--- Assigning Property Values ---");
+                        AssignmentResult result = valueAssigner.AssignValues(
+                            group.Value,
+                            element.SchemaElementParameters,
+                            psdId,
+                            acDoc.Database);
+
+                        ed.WriteMessage("\nResults: {0}", result.ToString());
+
+                        if (result.Errors.Count > 0)
+                        {
+                            ed.WriteMessage("\n\nErrors:");
+                            foreach (var error in result.Errors.Take(10))
+                            {
+                                ed.WriteMessage("\n  {0}", error);
+                            }
+                            if (result.Errors.Count > 10)
+                                ed.WriteMessage("\n  ... and {0} more errors", result.Errors.Count - 10);
+                        }
+
+                        processed += result.Updated;
+                        passCount += result.Updated; // Assume all are pass for now
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage("\nError processing property set group: {0}", ex.Message);
+                        errors += group.Value.Count;
+                    }
                 }
 
                 // Print summary

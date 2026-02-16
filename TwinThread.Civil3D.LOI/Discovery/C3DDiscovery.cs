@@ -262,6 +262,7 @@ namespace TwinThread.Civil3D.LOI.Discovery
                                     ObjectType = Constants.ObjectTypeSolid,
                                     Layer = solid.Layer,
                                     Name = solid.Handle.ToString(), // Solids don't have names
+                                    ShapeCodeName = ExtractShapeCodeName(solid),
                                     IsLocked = solid.IsWriteEnabled == false
                                 });
                             }
@@ -392,6 +393,61 @@ namespace TwinThread.Civil3D.LOI.Discovery
         {
             try { return structure.PartSizeName ?? ""; }
             catch { return ""; }
+        }
+
+        /// <summary>
+        /// Extract shape code name from corridor solid XData
+        /// </summary>
+        private string ExtractShapeCodeName(Solid3d solid)
+        {
+            try
+            {
+                // Try to get shape code from AeccDbCorridor XData
+                ResultBuffer xdata = solid.GetXDataForApplication("AeccDbCorridor");
+                if (xdata != null)
+                {
+                    TypedValue[] values = xdata.AsArray();
+                    // Look for shape code in XData (usually stored as string)
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        if (values[i].TypeCode == (short)DxfCode.ExtendedDataAsciiString)
+                        {
+                            string value = values[i].Value?.ToString() ?? "";
+                            // Shape codes are typically meaningful names (not GUIDs or numbers)
+                            if (!string.IsNullOrWhiteSpace(value) &&
+                                !value.Contains("{") &&
+                                !value.All(char.IsDigit) &&
+                                value.Length > 2)
+                            {
+                                xdata.Dispose();
+                                return value;
+                            }
+                        }
+                    }
+                    xdata.Dispose();
+                }
+
+                // Try alternative: look for "AeccShapeCode" or similar XData
+                xdata = solid.GetXDataForApplication("ACAD");
+                if (xdata != null)
+                {
+                    TypedValue[] values = xdata.AsArray();
+                    for (int i = 0; i < values.Length - 1; i++)
+                    {
+                        if (values[i].TypeCode == (short)DxfCode.ExtendedDataAsciiString &&
+                            values[i].Value?.ToString().Contains("Shape") == true)
+                        {
+                            string shapeCode = values[i + 1].Value?.ToString() ?? "";
+                            xdata.Dispose();
+                            return shapeCode;
+                        }
+                    }
+                    xdata.Dispose();
+                }
+            }
+            catch { }
+
+            return ""; // No shape code found
         }
     }
 }

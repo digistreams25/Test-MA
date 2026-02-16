@@ -26,6 +26,7 @@ namespace TwinThread.Civil3D.LOI.Core
         public string AlignmentName { get; set; }
         public string AssemblyName { get; set; }
         public string RegionName { get; set; }
+        public string ShapeCodeName { get; set; } // For corridor solids
 
         // Status
         public bool IsLocked { get; set; }

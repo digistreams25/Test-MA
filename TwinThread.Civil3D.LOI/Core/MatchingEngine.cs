@@ -138,6 +138,16 @@ namespace TwinThread.Civil3D.LOI.Core
                     case "regionregex":
                         return MatchesRegex(ctx.RegionName, rule.Value);
 
+                    // Corridor solid shape code matching
+                    case "shapecodeequals":
+                        return string.Equals(ctx.ShapeCodeName, rule.Value, StringComparison.OrdinalIgnoreCase);
+
+                    case "shapecodecontains":
+                        return ctx.ShapeCodeName != null && ctx.ShapeCodeName.IndexOf(rule.Value, StringComparison.OrdinalIgnoreCase) >= 0;
+
+                    case "shapecoderegex":
+                        return MatchesRegex(ctx.ShapeCodeName, rule.Value);
+
                     default:
                         return false; // Unknown rule type
                 }

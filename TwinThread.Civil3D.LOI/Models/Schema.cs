@@ -43,6 +43,18 @@ namespace TwinThread.Civil3D.LOI.Models
 
         [JsonPropertyName("c3d")]
         public C3dMatchingConfig C3d { get; set; }
+
+        /// <summary>
+        /// Storage mode: "XData" or "PropertySet" (default: XData)
+        /// </summary>
+        [JsonPropertyName("storageMode")]
+        public string StorageMode { get; set; }
+
+        /// <summary>
+        /// Property Set configuration (only used when storageMode = "PropertySet")
+        /// </summary>
+        [JsonPropertyName("propertySet")]
+        public PropertySetConfig PropertySet { get; set; }
     }
 
     public class SchemaElementParameter
@@ -58,6 +70,24 @@ namespace TwinThread.Civil3D.LOI.Models
 
         [JsonPropertyName("scopedDefinition")]
         public ScopedDefinition ScopedDefinition { get; set; }
+
+        /// <summary>
+        /// Default value assignment mode: "Global", "Manual", "PerObject", "Rule"
+        /// </summary>
+        [JsonPropertyName("valueMode")]
+        public string ValueMode { get; set; }
+
+        /// <summary>
+        /// Default value (for Global mode or as fallback)
+        /// </summary>
+        [JsonPropertyName("defaultValue")]
+        public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Mapping rule for automatic value assignment (e.g., "layer", "name", "handle")
+        /// </summary>
+        [JsonPropertyName("mappingRule")]
+        public string MappingRule { get; set; }
     }
 
     public class ScopedDefinition
@@ -91,5 +121,35 @@ namespace TwinThread.Civil3D.LOI.Models
 
         [JsonPropertyName("value")]
         public string Value { get; set; }
+    }
+
+    /// <summary>
+    /// Property Set configuration for Civil 3D Property Set Definition
+    /// </summary>
+    public class PropertySetConfig
+    {
+        /// <summary>
+        /// Property Set Definition name (required)
+        /// </summary>
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Applicability: "All", "DXF:LINE,ARC" or Civil 3D object types
+        /// </summary>
+        [JsonPropertyName("applicability")]
+        public string Applicability { get; set; }
+
+        /// <summary>
+        /// Merge behavior: "Update" (default) or "Replace"
+        /// </summary>
+        [JsonPropertyName("mergeBehavior")]
+        public string MergeBehavior { get; set; }
+
+        /// <summary>
+        /// Description of the property set
+        /// </summary>
+        [JsonPropertyName("description")]
+        public string Description { get; set; }
     }
 }
