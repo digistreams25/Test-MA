@@ -67,6 +67,41 @@ namespace TwinThread.Civil3D.LOI.Commands
                 PropertySetManager propSetMgr = new PropertySetManager();
                 ObjectId propSetDefId = ObjectId.Null;
 
+                // Collect ALL unique parameters from ALL schema elements
+                ed.WriteMessage("\n\nCollecting parameters from all schema elements...");
+                var allParameters = new List<SchemaElementParameter>();
+                var paramNames = new HashSet<string>();
+
+                foreach (var element in schema.SchemaElements)
+                {
+                    if (element.SchemaElementParameters != null)
+                    {
+                        foreach (var param in element.SchemaElementParameters)
+                        {
+                            if (paramNames.Add(param.Name))  // Add only if unique
+                            {
+                                allParameters.Add(param);
+                            }
+                        }
+                    }
+                }
+
+                ed.WriteMessage("\nTotal unique parameters: {0}", allParameters.Count);
+
+                // Create PropertySet definition with ALL parameters upfront
+                if (allParameters.Count > 0)
+                {
+                    propSetDefId = propSetMgr.EnsurePropertySetDefinition(
+                        acDoc.Database,
+                        "TwinThread_LOI",
+                        allParameters,
+                        "All",
+                        "Update",
+                        "TwinThread Level of Information Properties");
+
+                    ed.WriteMessage("\nPropertySet definition created with {0} properties", allParameters.Count);
+                }
+
                 // Discover all objects
                 ed.WriteMessage("\n\nDiscovering Civil 3D objects...");
                 C3DDiscovery discovery = new C3DDiscovery();
@@ -148,25 +183,16 @@ namespace TwinThread.Civil3D.LOI.Commands
                             // Write to PropertySet for native Civil 3D property display
                             try
                             {
-                                // Ensure PropertySet definition exists (once)
-                                if (propSetDefId == ObjectId.Null)
+                                // Attach PropertySet to entity (definition already created)
+                                if (propSetDefId != ObjectId.Null)
                                 {
-                                    propSetDefId = propSetMgr.EnsurePropertySetDefinition(
-                                        acDoc.Database,
-                                        "TwinThread_LOI",
-                                        matchedElement.SchemaElementParameters,
-                                        "All",
-                                        "Update",
-                                        "TwinThread Level of Information Properties");
-                                }
+                                    propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database);
 
-                                // Attach PropertySet to entity
-                                propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database);
-
-                                // Write each LOI value to PropertySet
-                                foreach (var kvp in xdata)
-                                {
-                                    propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                    // Write each LOI value to PropertySet
+                                    foreach (var kvp in xdata)
+                                    {
+                                        propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                    }
                                 }
                             }
                             catch (System.Exception psEx)
