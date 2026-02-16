@@ -75,9 +75,9 @@
       <Private>False</Private>
     </Reference>
 
-    <!-- CRITICAL: AecPropertyDataMgd.dll contains PropertySet API for native property display -->
-    <Reference Include="AecPropertyDataMgd">
-      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\AecPropertyDataMgd.dll</HintPath>
+    <!-- CRITICAL: AecPropDataMgd.dll contains PropertySet API for native property display -->
+    <Reference Include="AecPropDataMgd">
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\ACA\AecPropDataMgd.dll</HintPath>
       <Private>False</Private>
     </Reference>
 
