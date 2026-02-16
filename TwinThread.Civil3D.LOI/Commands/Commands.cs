@@ -251,7 +251,22 @@ namespace TwinThread.Civil3D.LOI.Commands
                                         {
                                             // Convert value to appropriate type for PropertySet
                                             object propertySetValue = ConvertValueForPropertySet(value, param.StorageType);
-                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, propertySetValue, acDoc.Database);
+
+                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, propertySetValue, acDoc.Database);
+
+                                            // DEBUG: Log write failures
+                                            if (!success && processed < 2)
+                                            {
+                                                ed.WriteMessage("\n  WRITE FAILED: {0} = {1}", param.Name, propertySetValue);
+                                            }
+                                            else if (success && processed < 2)
+                                            {
+                                                ed.WriteMessage("\n  WRITE OK: {0} = {1}", param.Name, propertySetValue);
+                                            }
+                                        }
+                                        else if (processed < 2)
+                                        {
+                                            ed.WriteMessage("\n  SKIPPED (null): {0}", param.Name);
                                         }
                                     }
 
@@ -260,7 +275,11 @@ namespace TwinThread.Civil3D.LOI.Commands
                                     {
                                         if (kvp.Key.StartsWith("tt."))
                                         {
-                                            propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                            if (!success && processed < 2)
+                                            {
+                                                ed.WriteMessage("\n  METADATA WRITE FAILED: {0}", kvp.Key);
+                                            }
                                         }
                                     }
                                 }
