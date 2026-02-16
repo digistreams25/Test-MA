@@ -1,0 +1,447 @@
+{
+  "projectId": "pipe-resolver-test-001",
+  "projectName": "Pipe PropertyResolver Test Project",
+  "milestone": {
+    "id": "test-milestone-001",
+    "name": "PropertyResolver Testing"
+  },
+  "schemaElements": [
+    {
+      "id": "pipe-geometry-test",
+      "name": "Pipe Geometry Properties Test",
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAny": [
+          { "kind": "networkEquals", "value": "Storm" },
+          { "kind": "networkEquals", "value": "Sanitary" },
+          { "kind": "networkEquals", "value": "Water" }
+        ],
+        "matchAll": []
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Pipe_Length_3D",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Length3D",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Pipe_Length_2D",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Length2D",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Inner_Diameter",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.InnerDiameter",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Outer_Diameter",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.OuterDiameter",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Wall_Thickness",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.WallThickness",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Pipe_Slope",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Slope",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Start_Offset",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.StartOffset",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "End_Offset",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.EndOffset",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Start_Invert",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.StartInvert",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "End_Invert",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.EndInvert",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Start_Point",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.StartPoint",
+          "isRequired": false,
+          "defaultValue": "0,0,0"
+        },
+        {
+          "name": "End_Point",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.EndPoint",
+          "isRequired": false,
+          "defaultValue": "0,0,0"
+        }
+      ]
+    },
+    {
+      "id": "pipe-part-info-test",
+      "name": "Pipe Part Information Test",
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAny": [
+          { "kind": "layerContains", "value": "PIPE" },
+          { "kind": "layerContains", "value": "UTIL" }
+        ],
+        "matchAll": []
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Part_Family_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.PartFamilyName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Part_Size_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.PartSizeName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Part_Description",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.PartDescription",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "Network_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.NetworkName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Flow_Direction",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.FlowDirection",
+          "isRequired": false,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Style_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.StyleName",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "Pipe_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Name",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "Pipe_Layer",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Layer",
+          "isRequired": false,
+          "defaultValue": "0"
+        },
+        {
+          "name": "Pipe_Handle",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Handle",
+          "isRequired": false,
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "id": "structure-test",
+      "name": "Structure Properties Test",
+      "c3d": {
+        "targets": ["structure"],
+        "matchAny": [
+          { "kind": "networkEquals", "value": "Storm" },
+          { "kind": "networkEquals", "value": "Sanitary" }
+        ],
+        "matchAll": []
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Rim_Elevation",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.RimElevation",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Sump_Elevation",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.SumpElevation",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Sump_Depth",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.SumpDepth",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Total_Depth",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.Depth",
+          "isRequired": true,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Inner_Diameter",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.InnerDiameter",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "Position",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.Position",
+          "isRequired": false,
+          "defaultValue": "0,0,0"
+        },
+        {
+          "name": "Part_Family_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.PartFamilyName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Part_Size_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.PartSizeName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Network_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.NetworkName",
+          "isRequired": true,
+          "defaultValue": "Unknown"
+        },
+        {
+          "name": "Structure_Name",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Structure.Name",
+          "isRequired": false,
+          "defaultValue": ""
+        }
+      ]
+    },
+    {
+      "id": "pipe-all-properties",
+      "name": "Complete Pipe Test - All Properties",
+      "c3d": {
+        "targets": ["pipe"],
+        "matchAny": [
+          { "kind": "nameContains", "value": "TEST" },
+          { "kind": "nameContains", "value": "DEMO" }
+        ],
+        "matchAll": []
+      },
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "PIPE-TEST-001"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "PropertyResolver Test Co"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Testing"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "PropertyResolver Validation"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "PVC"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "Text",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S4"
+            }
+          }
+        },
+        {
+          "name": "RESOLVED_Length3D",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Length3D",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "RESOLVED_InnerDiameter",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.InnerDiameter",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "RESOLVED_Slope",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.Slope",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "RESOLVED_PartFamily",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.PartFamilyName",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "RESOLVED_PartSize",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.PartSizeName",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "RESOLVED_NetworkName",
+          "storageType": "Text",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.NetworkName",
+          "isRequired": false,
+          "defaultValue": ""
+        },
+        {
+          "name": "RESOLVED_StartInvert",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.StartInvert",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "RESOLVED_EndInvert",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.EndInvert",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        },
+        {
+          "name": "RESOLVED_WallThickness",
+          "storageType": "Real",
+          "valueMode": "PropertyPath",
+          "propertyPath": "Pipe.WallThickness",
+          "isRequired": false,
+          "defaultValue": "0.0"
+        }
+      ]
+    }
+  ]
+}
