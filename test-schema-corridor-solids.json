@@ -7,6 +7,81 @@
   },
   "schemaElements": [
     {
+      "id": "pipe-network-test",
+      "name": "PN-Test Pipe Network",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_PipeNetwork_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for PN-Test pipe network pipes and structures"
+      },
+      "c3d": {
+        "targets": ["pipe", "structure"],
+        "matchAll": [
+          { "kind": "networkEquals", "value": "PN-Test" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Network_Name",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "networkName",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Family",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partFamily",
+          "isRequired": false
+        },
+        {
+          "name": "Part_Size",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "partSize",
+          "isRequired": false
+        },
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "PVC",
+          "isRequired": true
+        },
+        {
+          "name": "Installation_Date",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "2026-01-01",
+          "isRequired": false
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Proposed",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        },
+        {
+          "name": "Object_Handle",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "handle",
+          "isRequired": false
+        }
+      ]
+    },
+    {
       "id": "corridor-pave1",
       "name": "Paving Layer 1",
       "storageMode": "PropertySet",
