@@ -485,6 +485,82 @@
         ],
         "matchAll": []
       }
+    },
+    {
+      "id": "elem-layer-zero-solids",
+      "name": "Default Layer Solids (Layer 0)",
+      "schemaElementParameters": [
+        {
+          "name": "PDS_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "SOLID-L0-999"
+            }
+          }
+        },
+        {
+          "name": "Company_Name",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "General Contractor"
+            }
+          }
+        },
+        {
+          "name": "Design_Stage",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "SD"
+            }
+          }
+        },
+        {
+          "name": "Design_Status",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Needs Review"
+            }
+          }
+        },
+        {
+          "name": "Material",
+          "storageType": "String",
+          "isRequired": false,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "Unspecified"
+            }
+          }
+        },
+        {
+          "name": "Suitability_Code",
+          "storageType": "String",
+          "isRequired": true,
+          "scopedDefinition": {
+            "parameterDefinitionSource": {
+              "value": "S0"
+            }
+          }
+        }
+      ],
+      "c3d": {
+        "targets": ["solid"],
+        "matchAny": [
+          {
+            "kind": "layerEquals",
+            "value": "0"
+          }
+        ],
+        "matchAll": []
+      }
     }
   ]
 }
