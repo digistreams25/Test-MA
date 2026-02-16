@@ -75,6 +75,12 @@
       <Private>False</Private>
     </Reference>
 
+    <!-- CRITICAL: AecPropertyDataMgd.dll contains PropertySet classes -->
+    <Reference Include="AecPropertyDataMgd">
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\AecPropertyDataMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- System.Memory for ReadOnlySpan<T> support -->
     <Reference Include="System.Memory">
       <HintPath>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\Facades\System.Memory.dll</HintPath>
