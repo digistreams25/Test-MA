@@ -1,0 +1,299 @@
+{
+  "projectId": "test-project-001",
+  "projectName": "Corridor Solids Test Project",
+  "milestone": {
+    "id": "milestone-001",
+    "name": "Design Phase 1"
+  },
+  "schemaElements": [
+    {
+      "id": "corridor-pave1",
+      "name": "Paving Layer 1",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_Pave1_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for Pave1 corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "Pave1" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Asphalt Type 1",
+          "isRequired": true
+        },
+        {
+          "name": "Thickness_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "50",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        },
+        {
+          "name": "Object_Handle",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "handle",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "corridor-pave2",
+      "name": "Paving Layer 2",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_Pave2_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for Pave2 corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "Pave2" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Asphalt Type 2",
+          "isRequired": true
+        },
+        {
+          "name": "Thickness_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "40",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "corridor-base",
+      "name": "Base Course",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_Base_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for Base course corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "- Base" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Crushed Stone Base",
+          "isRequired": true
+        },
+        {
+          "name": "Thickness_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "150",
+          "isRequired": false
+        },
+        {
+          "name": "Compaction_Percent",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "95",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "corridor-subbase",
+      "name": "SubBase Course",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_SubBase_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for SubBase corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "SubBase" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Granular SubBase",
+          "isRequired": true
+        },
+        {
+          "name": "Thickness_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "200",
+          "isRequired": false
+        },
+        {
+          "name": "Compaction_Percent",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "90",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "corridor-curb",
+      "name": "Curb",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_Curb_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for Curb corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "Curb" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Concrete",
+          "isRequired": true
+        },
+        {
+          "name": "Type",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Standard Curb",
+          "isRequired": false
+        },
+        {
+          "name": "Height_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "150",
+          "isRequired": false
+        },
+        {
+          "name": "Width_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "450",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        }
+      ]
+    },
+    {
+      "id": "corridor-sidewalk",
+      "name": "Sidewalk",
+      "storageMode": "PropertySet",
+      "propertySet": {
+        "name": "TT_Sidewalk_Properties",
+        "applicability": "All",
+        "mergeBehavior": "Update",
+        "description": "Properties for Sidewalk corridor solids"
+      },
+      "c3d": {
+        "targets": ["solid"],
+        "matchAll": [
+          { "kind": "layerContains", "value": "Sidewalk" }
+        ]
+      },
+      "schemaElementParameters": [
+        {
+          "name": "Material",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Concrete Pavement",
+          "isRequired": true
+        },
+        {
+          "name": "Thickness_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "100",
+          "isRequired": false
+        },
+        {
+          "name": "Width_mm",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "1500",
+          "isRequired": false
+        },
+        {
+          "name": "Finish",
+          "storageType": "text",
+          "valueMode": "Manual",
+          "defaultValue": "Broom Finish",
+          "isRequired": false
+        },
+        {
+          "name": "Layer",
+          "storageType": "text",
+          "valueMode": "Rule",
+          "mappingRule": "layer",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}
