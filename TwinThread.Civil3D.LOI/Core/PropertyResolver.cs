@@ -4,6 +4,9 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.Civil.DatabaseServices;
 
+// Resolve Entity ambiguity - use AutoCAD Entity as base type
+using AcadEntity = Autodesk.AutoCAD.DatabaseServices.Entity;
+
 namespace TwinThread.Civil3D.LOI.Core
 {
     /// <summary>
@@ -21,7 +24,7 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <param name="propertyPath">Property path like "Pipe.Length3D" or "Structure.RimElevation"</param>
         /// <param name="transaction">Active transaction for reading related objects</param>
         /// <returns>Property value as object, or null if unsupported/unavailable</returns>
-        public object ResolveProperty(Entity entity, string propertyPath, Transaction transaction)
+        public object ResolveProperty(AcadEntity entity, string propertyPath, Transaction transaction)
         {
             if (entity == null || string.IsNullOrWhiteSpace(propertyPath))
                 return null;
@@ -536,7 +539,7 @@ namespace TwinThread.Civil3D.LOI.Core
 
         #region Generic Entity
 
-        private object ResolveGenericProperty(Entity entity, string propertyName)
+        private object ResolveGenericProperty(AcadEntity entity, string propertyName)
         {
             switch (propertyName)
             {
@@ -579,7 +582,7 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <summary>
         /// Check if a property path is supported for a given entity type
         /// </summary>
-        public bool IsPropertySupported(Entity entity, string propertyPath)
+        public bool IsPropertySupported(AcadEntity entity, string propertyPath)
         {
             object result = ResolveProperty(entity, propertyPath, null);
             return result != null;
@@ -588,7 +591,7 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <summary>
         /// Get formatted property value as string
         /// </summary>
-        public string ResolvePropertyAsString(Entity entity, string propertyPath, Transaction transaction, string format = null)
+        public string ResolvePropertyAsString(AcadEntity entity, string propertyPath, Transaction transaction, string format = null)
         {
             object value = ResolveProperty(entity, propertyPath, transaction);
             if (value == null)
