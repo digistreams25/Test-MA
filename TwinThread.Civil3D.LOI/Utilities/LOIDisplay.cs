@@ -4,6 +4,7 @@ using System.Text;
 using System.Windows.Forms;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
+using TwinThread.Civil3D.LOI.Core;
 
 namespace TwinThread.Civil3D.LOI.Utilities
 {
