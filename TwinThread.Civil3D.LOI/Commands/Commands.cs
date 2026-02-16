@@ -6,6 +6,8 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.Civil.ApplicationServices;
+using Autodesk.Aec.PropertyData;
+using Autodesk.Aec.PropertyData.DatabaseServices;
 using TwinThread.Civil3D.LOI.Core;
 using TwinThread.Civil3D.LOI.Discovery;
 using TwinThread.Civil3D.LOI.Models;
@@ -105,6 +107,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                 ed.WriteMessage("\nTotal unique parameters: {0}", allParameters.Count);
 
                 // Create PropertySet definition with ALL parameters upfront
+                // Use "Replace" to ensure PropertySet definition is recreated from scratch each time
                 if (allParameters.Count > 0)
                 {
                     propSetDefId = propSetMgr.EnsurePropertySetDefinition(
@@ -112,7 +115,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                         "TwinThread_LOI",
                         allParameters,
                         "All",
-                        "Update",
+                        "Replace",
                         "TwinThread Level of Information Properties");
 
                     // Verify properties were added
@@ -433,12 +436,15 @@ namespace TwinThread.Civil3D.LOI.Commands
 
                 ed.WriteMessage("\n--- Clearing TwinThread Schema ---");
 
-                // Discover all objects
+                int xdataCleared = 0;
+                int propSetsRemoved = 0;
+
+                // Step 1: Remove XData from all objects
+                ed.WriteMessage("\nStep 1: Removing XData from objects...");
                 C3DDiscovery discovery = new C3DDiscovery();
                 List<EntityContext> contexts = discovery.DiscoverAll(civilDoc, acDoc);
 
                 XDataStore xdataStore = new XDataStore();
-                int cleared = 0;
 
                 using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
                 {
@@ -454,7 +460,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                             if (entity != null)
                             {
                                 xdataStore.RemoveXData(entity);
-                                cleared++;
+                                xdataCleared++;
                             }
                         }
                         catch
@@ -466,7 +472,77 @@ namespace TwinThread.Civil3D.LOI.Commands
                     tr.Commit();
                 }
 
-                ed.WriteMessage("\nCleared XData from {0} objects.", cleared);
+                ed.WriteMessage("\n  Cleared XData from {0} objects", xdataCleared);
+
+                // Step 2: Remove PropertySet instances and definitions
+                ed.WriteMessage("\nStep 2: Removing PropertySet definitions...");
+
+                using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
+                {
+                    try
+                    {
+                        DictionaryPropertySetDefinitions propSetDefs = new DictionaryPropertySetDefinitions(acDoc.Database);
+
+                        // Remove TwinThread_LOI PropertySet definition
+                        if (propSetDefs.Has("TwinThread_LOI", tr))
+                        {
+                            ObjectId propSetDefId = propSetDefs.GetAt("TwinThread_LOI");
+
+                            // First, remove all PropertySet instances attached to objects
+                            foreach (EntityContext ctx in contexts)
+                            {
+                                if (!string.IsNullOrEmpty(ctx.ErrorMessage))
+                                    continue;
+
+                                try
+                                {
+                                    Autodesk.AutoCAD.DatabaseServices.Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite) as Autodesk.AutoCAD.DatabaseServices.Entity;
+                                    if (entity != null)
+                                    {
+                                        ObjectIdCollection propSetIds = PropertyDataServices.GetPropertySets(entity);
+                                        foreach (ObjectId psId in propSetIds)
+                                        {
+                                            PropertySet ps = tr.GetObject(psId, OpenMode.ForRead) as PropertySet;
+                                            if (ps != null && ps.PropertySetDefinition == propSetDefId)
+                                            {
+                                                PropertyDataServices.RemovePropertySet(entity, psId);
+                                                propSetsRemoved++;
+                                            }
+                                        }
+                                    }
+                                }
+                                catch
+                                {
+                                    // Skip errors
+                                }
+                            }
+
+                            // Then erase the definition itself
+                            PropertySetDefinition psd = tr.GetObject(propSetDefId, OpenMode.ForWrite) as PropertySetDefinition;
+                            if (psd != null)
+                            {
+                                psd.Erase();
+                                ed.WriteMessage("\n  Removed PropertySet definition 'TwinThread_LOI'");
+                            }
+                        }
+                        else
+                        {
+                            ed.WriteMessage("\n  No PropertySet definition found");
+                        }
+
+                        tr.Commit();
+                    }
+                    catch (System.Exception ex)
+                    {
+                        ed.WriteMessage("\n  Warning: PropertySet removal error: {0}", ex.Message);
+                        tr.Abort();
+                    }
+                }
+
+                ed.WriteMessage("\n  Removed {0} PropertySet instances", propSetsRemoved);
+                ed.WriteMessage("\n\n--- Summary ---");
+                ed.WriteMessage("\nXData cleared: {0} objects", xdataCleared);
+                ed.WriteMessage("\nPropertySets removed: {0} instances", propSetsRemoved);
                 ed.WriteMessage("\n\nComplete!");
             }
             catch (System.Exception ex)
