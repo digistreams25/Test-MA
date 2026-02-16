@@ -75,6 +75,12 @@
       <Private>False</Private>
     </Reference>
 
+    <!-- CRITICAL: AecPropertyDataMgd.dll contains PropertySet API for native property display -->
+    <Reference Include="AecPropertyDataMgd">
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\AecPropertyDataMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- System.Memory for ReadOnlySpan<T> support -->
     <Reference Include="System.Memory">
       <HintPath>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\Facades\System.Memory.dll</HintPath>
@@ -86,6 +92,7 @@
     <Compile Include="Core\EntityContext.cs" />
     <Compile Include="Core\LOIValidator.cs" />
     <Compile Include="Core\MatchingEngine.cs" />
+    <Compile Include="Core\PropertySetManager.cs" />
     <Compile Include="Core\SchemaLoader.cs" />
     <Compile Include="Core\XDataStore.cs" />
     <Compile Include="Discovery\C3DDiscovery.cs" />

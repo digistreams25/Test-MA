@@ -63,6 +63,10 @@ namespace TwinThread.Civil3D.LOI.Commands
                 XDataStore xdataStore = new XDataStore();
                 xdataStore.EnsureRegApp(acDoc.Database);
 
+                // Initialize PropertySet manager for native property display
+                PropertySetManager propSetMgr = new PropertySetManager();
+                ObjectId propSetDefId = ObjectId.Null;
+
                 // Discover all objects
                 ed.WriteMessage("\n\nDiscovering Civil 3D objects...");
                 C3DDiscovery discovery = new C3DDiscovery();
@@ -140,6 +144,36 @@ namespace TwinThread.Civil3D.LOI.Commands
 
                             // Write XData
                             xdataStore.WriteXDataFromDictionary(entity, xdata);
+
+                            // Write to PropertySet for native Civil 3D property display
+                            try
+                            {
+                                // Ensure PropertySet definition exists (once)
+                                if (propSetDefId == ObjectId.Null)
+                                {
+                                    propSetDefId = propSetMgr.EnsurePropertySetDefinition(
+                                        acDoc.Database,
+                                        "TwinThread_LOI",
+                                        matchedElement.SchemaElementParameters,
+                                        "All",
+                                        "Update",
+                                        "TwinThread Level of Information Properties");
+                                }
+
+                                // Attach PropertySet to entity
+                                propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database);
+
+                                // Write each LOI value to PropertySet
+                                foreach (var kvp in xdata)
+                                {
+                                    propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                }
+                            }
+                            catch (System.Exception psEx)
+                            {
+                                // Log PropertySet error but don't fail - XData is already written
+                                ed.WriteMessage("\nWarning: PropertySet error for {0}: {1}", ctx.Handle, psEx.Message);
+                            }
 
                             // Update counters
                             processed++;
