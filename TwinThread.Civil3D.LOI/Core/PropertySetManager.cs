@@ -61,7 +61,7 @@ namespace TwinThread.Civil3D.LOI.Core
                     psd.SetToStandard(db);
                     psd.Description = description ?? $"Property Set for {name}";
 
-                    ObjectId psdId = propSetDefs.AddNewRecord(name, psd);
+                    propSetDefs.AddNewRecord(name, psd);
                     tr.AddNewlyCreatedDBObject(psd, true);
                 }
 
