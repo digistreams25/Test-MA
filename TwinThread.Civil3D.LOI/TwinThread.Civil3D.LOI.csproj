@@ -69,6 +69,12 @@
       <Private>False</Private>
     </Reference>
 
+    <!-- CRITICAL: AecBaseMgd.dll contains Entity base class for Civil 3D objects -->
+    <Reference Include="AecBaseMgd">
+      <HintPath>C:\Program Files\Autodesk\AutoCAD 2024\AecBaseMgd.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
     <!-- System.Memory for ReadOnlySpan<T> support -->
     <Reference Include="System.Memory">
       <HintPath>$(ProgramFiles)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.8\Facades\System.Memory.dll</HintPath>
