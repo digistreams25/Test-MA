@@ -85,7 +85,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolvePipeProperty(Pipe pipe, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 // Geometry properties
                 case "Length3D":
@@ -179,7 +182,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolveStructureProperty(Structure structure, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 // Elevation properties
                 case "RimElevation":
@@ -253,7 +259,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolvePressurePipeProperty(PressurePipe pressurePipe, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 // Geometry
                 case "Length3D":
@@ -329,7 +338,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolvePressureFittingProperty(PressureFitting fitting, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 // Geometry
                 case "Position":
@@ -386,7 +398,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolvePressureAppurtenanceProperty(PressureAppurtenance appurtenance, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 // Geometry
                 case "Position":
@@ -443,7 +458,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolveCorridorProperty(Corridor corridor, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 case "Name":
                     return corridor.Name;
@@ -484,7 +502,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolveAlignmentProperty(Alignment alignment, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 case "Name":
                     return alignment.Name;
@@ -522,7 +543,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolveSolidProperty(Solid3d solid, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 case "Layer":
                     return solid.Layer;
@@ -559,7 +583,10 @@ namespace TwinThread.Civil3D.LOI.Core
 
         private object ResolveGenericProperty(AcadEntity entity, string propertyName)
         {
-            switch (propertyName)
+            // Normalize to PascalCase for case-insensitive matching
+            string normalizedName = NormalizePropertyName(propertyName);
+
+            switch (normalizedName)
             {
                 case "Layer":
                     return entity.Layer;
@@ -585,6 +612,24 @@ namespace TwinThread.Civil3D.LOI.Core
         #endregion
 
         #region Utility Methods
+
+        /// <summary>
+        /// Normalize property name to PascalCase for case-insensitive matching
+        /// Handles common schema variations: networkName -> NetworkName, partFamily -> PartFamily
+        /// </summary>
+        private string NormalizePropertyName(string propertyName)
+        {
+            if (string.IsNullOrWhiteSpace(propertyName))
+                return propertyName;
+
+            // Convert first character to uppercase (camelCase -> PascalCase)
+            if (char.IsLower(propertyName[0]))
+            {
+                return char.ToUpper(propertyName[0]) + propertyName.Substring(1);
+            }
+
+            return propertyName;
+        }
 
         /// <summary>
         /// Log unsupported property path (once per path to avoid spam)
