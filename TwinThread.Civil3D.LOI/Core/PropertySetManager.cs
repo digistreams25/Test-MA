@@ -153,7 +153,16 @@ namespace TwinThread.Civil3D.LOI.Core
                     propDef = new PropertyDefinition();
                     propDef.SetToStandard(psd.Database);
                     propDef.Name = param.Name;
-                    propDef.Description = param.Name;
+
+                    // Set description to indicate computed vs manual properties
+                    if (param.ValueMode == "Rule" && !string.IsNullOrWhiteSpace(param.MappingRule))
+                    {
+                        propDef.Description = $"{param.Name} (Auto-computed from object)";
+                    }
+                    else
+                    {
+                        propDef.Description = param.Name;
+                    }
 
                     // Set data type
                     propDef.DataType = MapStorageTypeToAecDataType(param.StorageType);
