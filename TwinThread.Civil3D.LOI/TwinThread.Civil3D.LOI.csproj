@@ -91,6 +91,7 @@
     <Compile Include="Discovery\C3DDiscovery.cs" />
     <Compile Include="Models\Schema.cs" />
     <Compile Include="Utilities\Constants.cs" />
+    <Compile Include="Utilities\LOIDisplay.cs" />
     <!--<Compile Include="Utilities\PropertySetManager.cs" />-->
   </ItemGroup>
   <ItemGroup>

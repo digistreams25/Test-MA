@@ -362,6 +362,55 @@ namespace TwinThread.Civil3D.LOI.Commands
             }
         }
 
+        [CommandMethod("TT_SHOW_LOI")]
+        public void ShowLOI()
+        {
+            Document acDoc = Application.DocumentManager.MdiActiveDocument;
+            if (acDoc == null)
+            {
+                System.Windows.Forms.MessageBox.Show("No active document found.");
+                return;
+            }
+
+            Editor ed = acDoc.Editor;
+
+            try
+            {
+                // Prompt user to select object
+                PromptEntityOptions peo = new PromptEntityOptions("\nSelect object to view LOI properties: ");
+                PromptEntityResult per = ed.GetEntity(peo);
+
+                if (per.Status != PromptStatus.OK)
+                {
+                    ed.WriteMessage("\nCommand cancelled.");
+                    return;
+                }
+
+                using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
+                {
+                    DBObject dbObj = tr.GetObject(per.ObjectId, OpenMode.ForRead);
+                    Autodesk.AutoCAD.DatabaseServices.Entity entity = dbObj as Autodesk.AutoCAD.DatabaseServices.Entity;
+
+                    if (entity == null)
+                    {
+                        ed.WriteMessage("\nSelected object is not a valid entity.");
+                        return;
+                    }
+
+                    // Display LOI data in a dialog box
+                    LOIDisplay display = new LOIDisplay();
+                    string objectType = entity.GetType().Name;
+                    display.ShowInMessageBox(entity, objectType);
+
+                    tr.Commit();
+                }
+            }
+            catch (System.Exception ex)
+            {
+                ed.WriteMessage("\nERROR: {0}", ex.Message);
+            }
+        }
+
         [CommandMethod("TT_REPORT")]
         public void ExportReport()
         {
