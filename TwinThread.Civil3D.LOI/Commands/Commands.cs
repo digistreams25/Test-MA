@@ -73,8 +73,6 @@ namespace TwinThread.Civil3D.LOI.Commands
                 // Initialize components
                 MatchingEngine matcher = new MatchingEngine();
                 LOIValidator validator = new LOIValidator();
-                Core.PropertySetManager propSetManager = new Core.PropertySetManager();
-                Core.PropertySetValueAssigner valueAssigner = new Core.PropertySetValueAssigner(propSetManager, ed);
 
                 // Processing counters
                 int processed = 0;
@@ -84,9 +82,6 @@ namespace TwinThread.Civil3D.LOI.Commands
                 int noMatch = 0;
                 int errors = 0;
                 List<string> unmatchedTypes = new List<string>();
-
-                // Group contexts by matched schema element
-                Dictionary<string, List<EntityContext>> elementGroups = new Dictionary<string, List<EntityContext>>();
 
                 // Process each object
                 using (Transaction tr = acDoc.Database.TransactionManager.StartTransaction())
@@ -132,44 +127,28 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 continue;
                             }
 
-                            // Check storage mode
-                            string storageMode = matchedElement.StorageMode ?? "XData";
+                            // Apply schema element to XData
+                            validator.ApplySchemaElement(xdata, matchedElement, schema);
 
-                            if (storageMode.Equals("PropertySet", StringComparison.OrdinalIgnoreCase))
+                            // Check XData size
+                            if (!xdataStore.IsXDataSizeValid(xdata))
                             {
-                                // Group by element for batch property set processing
-                                if (!elementGroups.ContainsKey(matchedElement.Id))
-                                {
-                                    elementGroups[matchedElement.Id] = new List<EntityContext>();
-                                }
-                                elementGroups[matchedElement.Id].Add(ctx);
-                                matched++;
+                                errors++;
+                                ed.WriteMessage("\nError: XData too large for object {0}", ctx.Handle);
+                                continue;
                             }
+
+                            // Write XData
+                            xdataStore.WriteXDataFromDictionary(entity, xdata);
+
+                            // Update counters
+                            processed++;
+                            matched++;
+
+                            if (xdata[Constants.LoiStatus] == Constants.StatusPass)
+                                passCount++;
                             else
-                            {
-                                // XData mode (existing logic)
-                                validator.ApplySchemaElement(xdata, matchedElement, schema);
-
-                                // Check XData size
-                                if (!xdataStore.IsXDataSizeValid(xdata))
-                                {
-                                    errors++;
-                                    ed.WriteMessage("\nError: XData too large for object {0}", ctx.Handle);
-                                    continue;
-                                }
-
-                                // Write XData
-                                xdataStore.WriteXDataFromDictionary(entity, xdata);
-
-                                // Update counters
-                                processed++;
-                                matched++;
-
-                                if (xdata[Constants.LoiStatus] == Constants.StatusPass)
-                                    passCount++;
-                                else
-                                    warnCount++;
-                            }
+                                warnCount++;
                         }
                         catch (System.Exception ex)
                         {
@@ -179,81 +158,6 @@ namespace TwinThread.Civil3D.LOI.Commands
                     }
 
                     tr.Commit();
-                }
-
-                // Process property set groups
-                foreach (var group in elementGroups)
-                {
-                    SchemaElement element = schema.SchemaElements.FirstOrDefault(e => e.Id == group.Key);
-                    if (element == null || element.PropertySet == null)
-                        continue;
-
-                    try
-                    {
-                        ed.WriteMessage("\n\n--- Processing Property Set: {0} ---", element.PropertySet.Name);
-                        ed.WriteMessage("\nObjects: {0}", group.Value.Count);
-
-                        // Create or update property set definition
-                        ObjectId psdId = propSetManager.EnsurePropertySetDefinition(
-                            acDoc.Database,
-                            element.PropertySet.Name,
-                            element.SchemaElementParameters,
-                            element.PropertySet.Applicability,
-                            element.PropertySet.MergeBehavior ?? "Update",
-                            element.PropertySet.Description);
-
-                        // Attach property sets to objects
-                        int attached = 0;
-                        foreach (var ctx in group.Value)
-                        {
-                            if (propSetManager.AttachPropertySet(ctx.ObjectId, psdId, acDoc.Database))
-                            {
-                                attached++;
-                            }
-                        }
-
-                        ed.WriteMessage("\nProperty sets attached: {0}", attached);
-
-                        // Assign values
-                        ed.WriteMessage("\n\n--- Assigning Property Values ---");
-                        AssignmentResult result = valueAssigner.AssignValues(
-                            group.Value,
-                            element.SchemaElementParameters,
-                            psdId,
-                            acDoc.Database);
-
-                        ed.WriteMessage("\nResults: {0}", result.ToString());
-
-                        if (result.Errors.Count > 0)
-                        {
-                            ed.WriteMessage("\n\nErrors:");
-                            foreach (var error in result.Errors.Take(10))
-                            {
-                                ed.WriteMessage("\n  {0}", error);
-                            }
-                            if (result.Errors.Count > 10)
-                                ed.WriteMessage("\n  ... and {0} more errors", result.Errors.Count - 10);
-                        }
-
-                        // Write tracking XData for PropertySet mode
-                        ed.WriteMessage("\n\n--- Writing Tracking XData ---");
-                        int xdataWritten = WritePropertySetTrackingXData(
-                            group.Value,
-                            element,
-                            schema,
-                            psdId,
-                            acDoc.Database,
-                            ref passCount,
-                            ref warnCount);
-                        ed.WriteMessage("\nTracking XData written: {0}", xdataWritten);
-
-                        processed += result.Updated;
-                    }
-                    catch (System.Exception ex)
-                    {
-                        ed.WriteMessage("\nError processing property set group: {0}", ex.Message);
-                        errors += group.Value.Count;
-                    }
                 }
 
                 // Print summary
@@ -708,100 +612,6 @@ namespace TwinThread.Civil3D.LOI.Commands
             {
                 ed.WriteMessage("\n\nERROR: {0}", ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Write tracking XData for PropertySet storage mode
-        /// </summary>
-        private int WritePropertySetTrackingXData(
-            List<EntityContext> contexts,
-            SchemaElement element,
-            Schema schema,
-            ObjectId propertySetDefId,
-            Database db,
-            ref int passCount,
-            ref int warnCount)
-        {
-            int written = 0;
-            Core.PropertySetManager propSetManager = new Core.PropertySetManager();
-            LOIValidator validator = new LOIValidator();
-            XDataStore xdataStore = new XDataStore();
-
-            using (Transaction tr = db.TransactionManager.StartTransaction())
-            {
-                foreach (var ctx in contexts)
-                {
-                    try
-                    {
-                        Entity entity = tr.GetObject(ctx.ObjectId, OpenMode.ForWrite) as Entity;
-                        if (entity == null)
-                            continue;
-
-                        // Build tracking XData dictionary
-                        Dictionary<string, string> xdata = new Dictionary<string, string>();
-
-                        // Add basic metadata
-                        xdata[Constants.ProjectId] = schema.ProjectId ?? "";
-                        xdata[Constants.ProjectName] = schema.ProjectName ?? "";
-                        xdata[Constants.SchemaElementId] = element.Id ?? "";
-                        xdata[Constants.SchemaElementName] = element.Name ?? "";
-                        xdata[Constants.StorageMode] = "PropertySet";
-                        xdata[Constants.PropertySetName] = element.PropertySet?.Name ?? "";
-
-                        // Add milestone info
-                        if (schema.Milestone != null)
-                        {
-                            xdata[Constants.MilestoneId] = schema.Milestone.Id ?? "";
-                            xdata[Constants.MilestoneName] = schema.Milestone.Name ?? "";
-                        }
-
-                        // Validate property set values to determine status
-                        List<string> missingFields = new List<string>();
-                        foreach (var param in element.SchemaElementParameters)
-                        {
-                            if (param.IsRequired)
-                            {
-                                object value = propSetManager.GetPropertyValue(
-                                    ctx.ObjectId,
-                                    propertySetDefId,
-                                    param.Name,
-                                    db);
-
-                                if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
-                                {
-                                    missingFields.Add(param.Name);
-                                }
-                            }
-                        }
-
-                        // Set status based on validation
-                        if (missingFields.Count == 0)
-                        {
-                            xdata[Constants.LoiStatus] = Constants.StatusPass;
-                            xdata[Constants.LoiMissingFields] = "";
-                            passCount++;
-                        }
-                        else
-                        {
-                            xdata[Constants.LoiStatus] = Constants.StatusWarn;
-                            xdata[Constants.LoiMissingFields] = string.Join(";", missingFields);
-                            warnCount++;
-                        }
-
-                        // Write XData
-                        xdataStore.WriteXDataFromDictionary(entity, xdata);
-                        written++;
-                    }
-                    catch (System.Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"XData tracking write failed for {ctx.Handle}: {ex.Message}");
-                    }
-                }
-
-                tr.Commit();
-            }
-
-            return written;
         }
 
         /// <summary>

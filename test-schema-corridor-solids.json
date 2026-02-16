@@ -9,13 +9,6 @@
     {
       "id": "pipe-network-test",
       "name": "PN-Test Pipe Network",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_PipeNetwork_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for PN-Test pipe network pipes and structures"
-      },
       "c3d": {
         "targets": ["pipe", "structure"],
         "matchAll": [
@@ -84,13 +77,6 @@
     {
       "id": "corridor-pave1",
       "name": "Paving Layer 1",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_Pave1_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for Pave1 corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
@@ -131,13 +117,6 @@
     {
       "id": "corridor-pave2",
       "name": "Paving Layer 2",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_Pave2_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for Pave2 corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
@@ -171,13 +150,6 @@
     {
       "id": "corridor-base",
       "name": "Base Course",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_Base_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for Base course corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
@@ -218,13 +190,6 @@
     {
       "id": "corridor-subbase",
       "name": "SubBase Course",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_SubBase_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for SubBase corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
@@ -265,13 +230,6 @@
     {
       "id": "corridor-curb",
       "name": "Curb",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_Curb_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for Curb corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
@@ -319,13 +277,6 @@
     {
       "id": "corridor-sidewalk",
       "name": "Sidewalk",
-      "storageMode": "PropertySet",
-      "propertySet": {
-        "name": "TT_Sidewalk_Properties",
-        "applicability": "All",
-        "mergeBehavior": "Update",
-        "description": "Properties for Sidewalk corridor solids"
-      },
       "c3d": {
         "targets": ["solid"],
         "matchAll": [
