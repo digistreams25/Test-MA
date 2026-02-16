@@ -308,35 +308,50 @@ namespace TwinThread.Civil3D.LOI.Core
                 {
                     Entity entity = tr.GetObject(entityId, OpenMode.ForWrite) as Entity;
                     if (entity == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("AttachPropertySet FAILED: Entity is null");
                         return false;
+                    }
 
                     PropertySetDefinition psd = tr.GetObject(propertySetDefId, OpenMode.ForRead) as PropertySetDefinition;
                     if (psd == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine("AttachPropertySet FAILED: PropertySetDefinition is null");
                         return false;
+                    }
 
                     // Check if already attached
                     ObjectIdCollection propSetIds = PropertyDataServices.GetPropertySets(entity);
+                    System.Diagnostics.Debug.WriteLine($"AttachPropertySet: Entity currently has {propSetIds.Count} property sets");
+
                     foreach (ObjectId psId in propSetIds)
                     {
                         PropertySet ps = tr.GetObject(psId, OpenMode.ForRead) as PropertySet;
                         if (ps != null && ps.PropertySetDefinition == propertySetDefId)
                         {
                             // Already attached
+                            System.Diagnostics.Debug.WriteLine("AttachPropertySet: Already attached, skipping");
                             tr.Commit();
                             return true;
                         }
                     }
 
                     // Attach new property set using PropertyDataServices
+                    System.Diagnostics.Debug.WriteLine("AttachPropertySet: Calling PropertyDataServices.AddPropertySet");
                     PropertyDataServices.AddPropertySet(entity, propertySetDefId);
 
+                    // Verify attachment
+                    propSetIds = PropertyDataServices.GetPropertySets(entity);
+                    System.Diagnostics.Debug.WriteLine($"AttachPropertySet: After attach, entity has {propSetIds.Count} property sets");
+
                     tr.Commit();
+                    System.Diagnostics.Debug.WriteLine("AttachPropertySet: SUCCESS");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Attach property set error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AttachPropertySet EXCEPTION: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }
@@ -352,10 +367,16 @@ namespace TwinThread.Civil3D.LOI.Core
                 {
                     Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
                     if (entity == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: Entity is null for {propertyName}");
                         return false;
+                    }
 
                     // Find the property set instance
                     ObjectIdCollection propSetIds = PropertyDataServices.GetPropertySets(entity);
+
+                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Entity has {propSetIds.Count} property sets attached");
+
                     foreach (ObjectId psId in propSetIds)
                     {
                         PropertySet ps = tr.GetObject(psId, OpenMode.ForWrite) as PropertySet;
@@ -363,25 +384,34 @@ namespace TwinThread.Civil3D.LOI.Core
                         {
                             // Find property by name
                             PropertySetDefinition psd = tr.GetObject(ps.PropertySetDefinition, OpenMode.ForRead) as PropertySetDefinition;
+
+                            System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Found matching PropertySet with {psd.Definitions.Count} properties");
+
                             for (int i = 0; i < psd.Definitions.Count; i++)
                             {
                                 if (psd.Definitions[i].Name == propertyName)
                                 {
+                                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Setting {propertyName} = {value}");
                                     ps.SetAt(i, value);
                                     tr.Commit();
                                     return true;
                                 }
                             }
+
+                            System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: Property '{propertyName}' not found in definition");
+                            tr.Abort();
+                            return false;
                         }
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: PropertySet not attached to entity for {propertyName}");
                     tr.Abort();
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Set property value error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"SetPropertyValue EXCEPTION for {propertyName}: {ex.Message}\n{ex.StackTrace}");
                 return false;
             }
         }
