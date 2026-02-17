@@ -300,7 +300,7 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <summary>
         /// Attach property set to an entity
         /// </summary>
-        public bool AttachPropertySet(ObjectId entityId, ObjectId propertySetDefId, Database db)
+        public bool AttachPropertySet(ObjectId entityId, ObjectId propertySetDefId, Database db, Autodesk.AutoCAD.EditorInput.Editor ed = null)
         {
             try
             {
@@ -309,20 +309,24 @@ namespace TwinThread.Civil3D.LOI.Core
                     Entity entity = tr.GetObject(entityId, OpenMode.ForWrite) as Entity;
                     if (entity == null)
                     {
-                        System.Diagnostics.Debug.WriteLine("AttachPropertySet FAILED: Entity is null");
+                        string msg = "AttachPropertySet FAILED: Entity is null";
+                        System.Diagnostics.Debug.WriteLine(msg);
+                        ed?.WriteMessage("\n  " + msg);
                         return false;
                     }
 
                     PropertySetDefinition psd = tr.GetObject(propertySetDefId, OpenMode.ForRead) as PropertySetDefinition;
                     if (psd == null)
                     {
-                        System.Diagnostics.Debug.WriteLine("AttachPropertySet FAILED: PropertySetDefinition is null");
+                        string msg = "AttachPropertySet FAILED: PropertySetDefinition is null";
+                        System.Diagnostics.Debug.WriteLine(msg);
+                        ed?.WriteMessage("\n  " + msg);
                         return false;
                     }
 
                     // Check if already attached
                     ObjectIdCollection propSetIds = PropertyDataServices.GetPropertySets(entity);
-                    System.Diagnostics.Debug.WriteLine($"AttachPropertySet: Entity currently has {propSetIds.Count} property sets");
+                    ed?.WriteMessage("\n  AttachPropertySet: Entity currently has {0} property sets", propSetIds.Count);
 
                     foreach (ObjectId psId in propSetIds)
                     {
@@ -330,28 +334,30 @@ namespace TwinThread.Civil3D.LOI.Core
                         if (ps != null && ps.PropertySetDefinition == propertySetDefId)
                         {
                             // Already attached
-                            System.Diagnostics.Debug.WriteLine("AttachPropertySet: Already attached, skipping");
+                            ed?.WriteMessage("\n  AttachPropertySet: Already attached, skipping");
                             tr.Commit();
                             return true;
                         }
                     }
 
                     // Attach new property set using PropertyDataServices
-                    System.Diagnostics.Debug.WriteLine("AttachPropertySet: Calling PropertyDataServices.AddPropertySet");
+                    ed?.WriteMessage("\n  AttachPropertySet: Calling PropertyDataServices.AddPropertySet");
                     PropertyDataServices.AddPropertySet(entity, propertySetDefId);
 
                     // Verify attachment
                     propSetIds = PropertyDataServices.GetPropertySets(entity);
-                    System.Diagnostics.Debug.WriteLine($"AttachPropertySet: After attach, entity has {propSetIds.Count} property sets");
+                    ed?.WriteMessage("\n  AttachPropertySet: After attach, entity has {0} property sets", propSetIds.Count);
 
                     tr.Commit();
-                    System.Diagnostics.Debug.WriteLine("AttachPropertySet: SUCCESS");
+                    ed?.WriteMessage("\n  AttachPropertySet: SUCCESS");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AttachPropertySet EXCEPTION: {ex.Message}\n{ex.StackTrace}");
+                string msg = $"AttachPropertySet EXCEPTION: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine(msg + "\n" + ex.StackTrace);
+                ed?.WriteMessage("\n  " + msg);
                 return false;
             }
         }
@@ -359,7 +365,7 @@ namespace TwinThread.Civil3D.LOI.Core
         /// <summary>
         /// Set property value on an entity
         /// </summary>
-        public bool SetPropertyValue(ObjectId entityId, ObjectId propertySetDefId, string propertyName, object value, Database db)
+        public bool SetPropertyValue(ObjectId entityId, ObjectId propertySetDefId, string propertyName, object value, Database db, Autodesk.AutoCAD.EditorInput.Editor ed = null)
         {
             try
             {
@@ -368,14 +374,16 @@ namespace TwinThread.Civil3D.LOI.Core
                     Entity entity = tr.GetObject(entityId, OpenMode.ForRead) as Entity;
                     if (entity == null)
                     {
-                        System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: Entity is null for {propertyName}");
+                        string msg = $"SetPropertyValue FAILED: Entity is null for {propertyName}";
+                        System.Diagnostics.Debug.WriteLine(msg);
+                        ed?.WriteMessage("\n  " + msg);
                         return false;
                     }
 
                     // Find the property set instance
                     ObjectIdCollection propSetIds = PropertyDataServices.GetPropertySets(entity);
 
-                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Entity has {propSetIds.Count} property sets attached");
+                    ed?.WriteMessage("\n  SetPropertyValue({0}): Entity has {1} property sets attached", propertyName, propSetIds.Count);
 
                     foreach (ObjectId psId in propSetIds)
                     {
@@ -385,33 +393,39 @@ namespace TwinThread.Civil3D.LOI.Core
                             // Find property by name
                             PropertySetDefinition psd = tr.GetObject(ps.PropertySetDefinition, OpenMode.ForRead) as PropertySetDefinition;
 
-                            System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Found matching PropertySet with {psd.Definitions.Count} properties");
+                            ed?.WriteMessage("\n  SetPropertyValue({0}): Found matching PropertySet with {1} properties", propertyName, psd.Definitions.Count);
 
                             for (int i = 0; i < psd.Definitions.Count; i++)
                             {
                                 if (psd.Definitions[i].Name == propertyName)
                                 {
-                                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue: Setting {propertyName} = {value}");
+                                    ed?.WriteMessage("\n  SetPropertyValue: Setting {0} = {1}", propertyName, value);
                                     ps.SetAt(i, value);
                                     tr.Commit();
                                     return true;
                                 }
                             }
 
-                            System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: Property '{propertyName}' not found in definition");
+                            string msg = $"SetPropertyValue FAILED: Property '{propertyName}' not found in definition";
+                            System.Diagnostics.Debug.WriteLine(msg);
+                            ed?.WriteMessage("\n  " + msg);
                             tr.Abort();
                             return false;
                         }
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"SetPropertyValue FAILED: PropertySet not attached to entity for {propertyName}");
+                    string msg2 = $"SetPropertyValue FAILED: PropertySet not attached to entity for {propertyName}";
+                    System.Diagnostics.Debug.WriteLine(msg2);
+                    ed?.WriteMessage("\n  " + msg2);
                     tr.Abort();
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"SetPropertyValue EXCEPTION for {propertyName}: {ex.Message}\n{ex.StackTrace}");
+                string msg = $"SetPropertyValue EXCEPTION for {propertyName}: {ex.Message}";
+                System.Diagnostics.Debug.WriteLine(msg + "\n" + ex.StackTrace);
+                ed?.WriteMessage("\n  " + msg);
                 return false;
             }
         }

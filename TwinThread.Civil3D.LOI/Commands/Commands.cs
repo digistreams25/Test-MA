@@ -225,7 +225,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                                 // Attach PropertySet to entity (definition already created)
                                 if (propSetDefId != ObjectId.Null)
                                 {
-                                    propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database);
+                                    propSetMgr.AttachPropertySet(ctx.ObjectId, propSetDefId, acDoc.Database, ed);
 
                                     // Resolve and write dynamic properties using PropertyResolver
                                     PropertyResolver propResolver = new PropertyResolver();
@@ -275,7 +275,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                                             // Convert value to appropriate type for PropertySet
                                             object propertySetValue = ConvertValueForPropertySet(value, param.StorageType);
 
-                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, propertySetValue, acDoc.Database);
+                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, param.Name, propertySetValue, acDoc.Database, ed);
 
                                             // DEBUG: Log write failures
                                             if (!success && processed < 2)
@@ -298,7 +298,7 @@ namespace TwinThread.Civil3D.LOI.Commands
                                     {
                                         if (kvp.Key.StartsWith("tt."))
                                         {
-                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database);
+                                            bool success = propSetMgr.SetPropertyValue(ctx.ObjectId, propSetDefId, kvp.Key, kvp.Value, acDoc.Database, ed);
                                             if (!success && processed < 2)
                                             {
                                                 ed.WriteMessage("\n  METADATA WRITE FAILED: {0}", kvp.Key);
