@@ -400,8 +400,9 @@ namespace TwinThread.Civil3D.LOI.Core
                             {
                                 if (psd.Definitions[i].Name == propertyName)
                                 {
-                                    ed?.WriteMessage("\n  SetPropertyValue: Setting {0} = {1}", propertyName, value);
-                                    ps.SetAt(i, value);
+                                    int propDefId = psd.Definitions[i].Id;
+                                    ed?.WriteMessage("\n  SetPropertyValue: Setting {0} = {1} (propDefId={2})", propertyName, value, propDefId);
+                                    ps.SetAt(propDefId, value);
                                     tr.Commit();
                                     return true;
                                 }
@@ -455,7 +456,8 @@ namespace TwinThread.Civil3D.LOI.Core
                             {
                                 if (psd.Definitions[i].Name == propertyName)
                                 {
-                                    object val = ps.GetAt(i);
+                                    int propDefId = psd.Definitions[i].Id;
+                                    object val = ps.GetAt(propDefId);
                                     tr.Commit();
                                     return val;
                                 }
