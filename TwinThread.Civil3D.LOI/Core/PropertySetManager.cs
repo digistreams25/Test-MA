@@ -333,10 +333,26 @@ namespace TwinThread.Civil3D.LOI.Core
                         PropertySet ps = tr.GetObject(psId, OpenMode.ForRead) as PropertySet;
                         if (ps != null && ps.PropertySetDefinition == propertySetDefId)
                         {
-                            // Already attached
-                            ed?.WriteMessage("\n  AttachPropertySet: Already attached, skipping");
-                            tr.Commit();
-                            return true;
+                            // Check if the instance is in sync with the definition
+                            PropertySetDefinition defCheck = tr.GetObject(propertySetDefId, OpenMode.ForRead) as PropertySetDefinition;
+                            int instanceCount = ps.Count;
+                            int definitionCount = defCheck.Definitions.Count;
+
+                            if (instanceCount == definitionCount)
+                            {
+                                // Already attached and in sync
+                                ed?.WriteMessage("\n  AttachPropertySet: Already attached and in sync ({0} properties), skipping", instanceCount);
+                                tr.Commit();
+                                return true;
+                            }
+                            else
+                            {
+                                // Instance is out of sync with definition - remove so we can reattach fresh
+                                ed?.WriteMessage("\n  AttachPropertySet: Instance out of sync (instance={0}, definition={1}), removing stale instance", instanceCount, definitionCount);
+                                ps.UpgradeOpen();
+                                PropertyDataServices.RemovePropertySet(entity, propertySetDefId);
+                                break;
+                            }
                         }
                     }
 
